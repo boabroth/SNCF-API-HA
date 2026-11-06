@@ -213,8 +213,8 @@ class SncfTrainCard extends HTMLElement {
       const platform=String(stop.platform||'').trim();
       const platformInfo=platform?`<span class="stop-platform">Voie ${this._escape(platform)}</span>`:'';
       const baseTimes=[
-        baseArrival? `Arr. ${this._time(baseArrival)}`:'',
-        baseDeparture? `Départ ${this._time(baseDeparture)}`:''
+        baseArrival? `ARR. ${this._time(baseArrival)}`:'',
+        baseDeparture? `DÉPART ${this._time(baseDeparture)}`:''
       ].filter(Boolean);
       const showBase=Number(entity.attributes.delay_minutes)>0&&baseTimes.length;
       return `<div class="stop-row ${passed?'passed':''}">
