@@ -147,13 +147,16 @@ class SncfTrainCard extends HTMLElement {
     const showUnits=this.config.show_train_units&&Number.isInteger(units)&&units>0;
     const trainType=String(a.train_type||'').trim();
     const showType=this.config.show_train_type&&trainType;
+    const trainNumber=String(a.train_num||'').trim();
+    const trainLabel=trainNumber? `TER ${trainNumber}` : 'TER';
+    const expanded=!!this._expanded[entity.entity_id];
     const departureInfo=showPlatform?`<div class="platform-line departure-platform"><span class="platform-label">Voie</span><strong>${this._escape(platform)}</strong></div>`:'';
     const trainInfo=[
       showUnits?`<span class="train-detail"><ha-icon icon="mdi:train-variant"></ha-icon>${units} ${units===1?'rame':'rames'}</span>`:'',
       showType?`<span class="train-detail train-type">${this._escape(trainType)}</span>`:''
     ].filter(Boolean).join('');
     const countdown=this.config.show_countdown&&now<dep?`<span class="countdown" data-departure="${dep}">${this._countdown(dep,now)}</span>`:'';
-    return `<article class="train-row ${state}">
+    return `<article class="train-row ${state} ${expanded?'expanded':''}" data-train-id="${this._escape(entity.entity_id)}" role="button" tabindex="0" aria-expanded="${expanded}">
       <div class="journey">
         <div class="station depart"><span class="station-caption">Départ</span>
           <div class="times">${time(baseDep,realDep)}</div>${departureInfo}</div>
@@ -167,14 +170,70 @@ class SncfTrainCard extends HTMLElement {
           <div class="times">${time(baseArr,realArr)}</div>${arrivalInfo}</div>
       </div>
       <div class="train-footer">
-        <div class="train-meta"><span class="ter-pill">TER</span>
+        <div class="train-meta"><span class="ter-pill">${this._escape(trainLabel)}</span>
           ${trainInfo?`<span class="train-details">${trainInfo}</span>`:''}
           ${this.config.show_duration&&durationLabel?`<span class="duration"><ha-icon icon="mdi:clock-outline"></ha-icon>${durationLabel}</span>`:''}
           ${countdown}
         </div>
         ${this.config.show_status?`<span class="status"><span class="dot"></span>${label}</span>`:''}
       </div>
+      ${this._stopDetails(entity,expanded)}
+      <div class="expand-chevron" aria-hidden="true"><ha-icon icon="mdi:chevron-down"></ha-icon></div>
     </article>`;
+  }
+  _stopDetails(entity,expanded){
+    const stops=Array.isArray(entity.attributes.stops)?entity.attributes.stops:[];
+    if(!stops.length)return '';
+    const now=Date.now();
+    const eventTimes=stops.map((stop,index)=>{
+      const value=index===stops.length-1
+        ?(stop.arrival_time||stop.departure_time)
+        :(stop.departure_time||stop.arrival_time);
+      return this._date(value);
+    });
+    const validTimes=eventTimes.filter(Number.isFinite);
+    const position=this._stopPosition(validTimes,now);
+    const rows=stops.map((stop,index)=>{
+      const arrival=String(stop.arrival_time||'').trim();
+      const departure=String(stop.departure_time||'').trim();
+      const baseArrival=String(stop.base_arrival_time||'').trim();
+      const baseDeparture=String(stop.base_departure_time||'').trim();
+      const actualParts=[
+        arrival? `Arr. ${this._time(arrival)}`:'',
+        departure? `Dép. ${this._time(departure)}`:''
+      ].filter(Boolean);
+      const baseParts=[
+        baseArrival? `Arr. ${this._time(baseArrival)}`:'',
+        baseDeparture? `Dép. ${this._time(baseDeparture)}`:''
+      ].filter(Boolean);
+      const showBase=Number(entity.attributes.delay_minutes)>0&&baseParts.length&&baseParts.join(' · ')!==actualParts.join(' · ');
+      return `<div class="stop-row">
+        <span class="stop-dot"></span>
+        <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}</span>
+        <span class="stop-times"><span>${this._escape(actualParts.join(' · ')||'--:--')}</span>${showBase?`<small>${this._escape(baseParts.join(' · '))}</small>`:''}</span>
+      </div>`;
+    }).join('');
+    const height=Math.max(36,(stops.length-1)*36);
+    return `<div class="stop-details" style="max-height:${expanded?stops.length*36+40:0}px;opacity:${expanded?1:0}">
+      <div class="stop-timeline" data-times="${eventTimes.join(',')}" style="height:${stops.length*36}px">
+        <div class="stop-rail"></div>
+        <div class="stop-rail-fill" style="height:${position*36}px"></div>
+        <span class="stop-train-marker" style="top:${17+position*36}px">🚆</span>
+        ${rows}
+      </div>
+    </div>`;
+  }
+  _stopPosition(times,now){
+    if(!times.length)return 0;
+    if(now<=times[0])return 0;
+    if(now>=times[times.length-1])return times.length-1;
+    for(let i=0;i<times.length-1;i++){
+      if(now>=times[i]&&now<=times[i+1]){
+        const span=times[i+1]-times[i];
+        return i+(span>0?(now-times[i])/span:0);
+      }
+    }
+    return 0;
   }
   _countdown(dep,now=Date.now()){
     const diff=dep-now;
@@ -191,7 +250,14 @@ class SncfTrainCard extends HTMLElement {
       el.textContent=this._countdown(dep,now);
       el.hidden=now>=dep;
     });
-
+    this.shadowRoot.querySelectorAll('.stop-timeline').forEach(timeline=>{
+      const times=String(timeline.dataset.times||'').split(',').map(Number).filter(Number.isFinite);
+      const position=this._stopPosition(times,now);
+      const fill=timeline.querySelector('.stop-rail-fill');
+      const marker=timeline.querySelector('.stop-train-marker');
+      if(fill)fill.style.height=`${position*36}px`;
+      if(marker)marker.style.top=`${17+position*36}px`;
+    });
   }
   _directionName(group,index){
     const configured=String(this.config.direction_titles||'').split('|').map(s=>s.trim());
@@ -231,6 +297,27 @@ class SncfTrainCard extends HTMLElement {
       this._expanded[id]=!this._expanded[id];
       this._updatePanel(groups);
     });
+    panel.querySelectorAll('.train-row[data-train-id]').forEach(row=>{
+      const toggle=()=>{
+        const id=row.dataset.trainId;
+        const expanded=!this._expanded[id];
+        this._expanded[id]=expanded;
+        row.classList.toggle('expanded',expanded);
+        row.setAttribute('aria-expanded',String(expanded));
+        const details=row.querySelector('.stop-details');
+        if(details){
+          details.style.maxHeight=expanded?`${details.scrollHeight}px`:'0px';
+          details.style.opacity=expanded?'1':'0';
+        }
+      };
+      row.addEventListener('click',toggle);
+      row.addEventListener('keydown',event=>{
+        if(event.key==='Enter'||event.key===' '){
+          event.preventDefault();
+          toggle();
+        }
+      });
+    });
   }
   _updatePanel(groups){
     const panel=this.shadowRoot.querySelector('.panel');
@@ -249,7 +336,8 @@ class SncfTrainCard extends HTMLElement {
         t.entity_id,t.attributes.departure_time,t.attributes.arrival_time,
         t.attributes.base_departure_time,t.attributes.base_arrival_time,
         t.attributes.delay_minutes,t.attributes.has_delay,
-        t.attributes.platform,t.attributes.arrival_platform,t.attributes.train_units,t.attributes.train_type
+        t.attributes.platform,t.attributes.arrival_platform,t.attributes.train_units,t.attributes.train_type,
+        t.attributes.train_num,t.attributes.stops
       ])]));
       // Avoid replacing the DOM on every Home Assistant state update.
       // This prevents focus/scroll jumps on iOS.
@@ -291,7 +379,22 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
 .direction-dots span.active{width:19px;background:var(--accent)}
 .trains{padding:2px 12px 0}
-.train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 11px;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07))}
+.train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stop-details{overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:12px;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+.stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
+.stop-rail{position:absolute;left:27px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
+.stop-rail-fill{position:absolute;left:27px;top:17px;width:2px;background:var(--success-color,#2ead62);transition:height .5s ease}
+.stop-row{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;min-height:36px;gap:6px;z-index:1}
+.stop-dot{width:8px;height:8px;margin-left:5px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color)}
+.stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
+.stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stop-times small{font-size:.61rem;color:var(--secondary-text-color);text-decoration:line-through;font-weight:400}
+.stop-train-marker{position:absolute;left:13px;transform:translateY(-50%);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:17px;line-height:28px;background:var(--secondary-background-color,var(--card-background-color));z-index:2;transition:top .5s ease}
+.expand-chevron{display:flex;justify-content:center;align-items:center;height:28px;margin:0 -12px;color:var(--secondary-text-color);opacity:.8}
+.expand-chevron ha-icon{--mdc-icon-size:19px;transition:transform .3s ease}
+.train-row.expanded .expand-chevron ha-icon{transform:rotate(180deg)}
+.train-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.stop-details,.expand-chevron ha-icon,.stop-train-marker,.stop-rail-fill{transition:none}}
 .journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:8px;min-width:0;width:100%}
 .station{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}\n.station.depart{overflow:visible}
 .station.arrive{text-align:right}
