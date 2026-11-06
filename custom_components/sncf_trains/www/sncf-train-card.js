@@ -19,6 +19,7 @@ class SncfTrainCard extends HTMLElement {
     this._painted=false;
     this._platformHistory={};
     this._platformChanges={};
+    this._collapsed=false;
   }
   setConfig(config) {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
@@ -401,7 +402,19 @@ class SncfTrainCard extends HTMLElement {
   }
   _attachActions(groups){
     const panel=this.shadowRoot.querySelector('.panel');
+    const cardHeader=this.shadowRoot.querySelector('[data-collapse-toggle]');
+    const toggleCard=()=>{
+      this._collapsed=!this._collapsed;
+      const card=this.shadowRoot.querySelector('ha-card');
+      card?.classList.toggle('collapsed',this._collapsed);
+      cardHeader?.setAttribute('aria-expanded',String(!this._collapsed));
+      const chevron=cardHeader?.querySelector('.collapse-chevron');
+      if(chevron)chevron.setAttribute('icon',this._collapsed?'mdi:chevron-down':'mdi:chevron-up');
+    };
+    cardHeader?.addEventListener('click',event=>{if(!event.target.closest('button'))toggleCard();});
+    cardHeader?.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target===cardHeader){event.preventDefault();toggleCard();}});
     this.shadowRoot.querySelector('[data-refresh]')?.addEventListener('click',async event=>{
+      event.stopPropagation();
       const button=event.currentTarget;
       if(button.disabled)return;
       button.disabled=true;
@@ -479,7 +492,7 @@ class SncfTrainCard extends HTMLElement {
       this._signature=signature;
       if(!this._painted){
         this.shadowRoot.innerHTML=`<style>${this._css()}</style><ha-card>
-          <header><ha-icon icon="mdi:train"></ha-icon><span>${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button></header>
+          <header class="card-header" data-collapse-toggle role="button" tabindex="0" aria-expanded="true"><span class="title-icon"><ha-icon icon="mdi:train"></ha-icon></span><span class="card-title">${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button><ha-icon class="collapse-chevron" icon="mdi:chevron-up"></ha-icon></header>
           <div class="panel"></div></ha-card>`;
         this._painted=true;
       }
@@ -501,8 +514,14 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-inline{font-weight:650;color:var(--primary-text-color)}
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
 .train-type{overflow-wrap:anywhere}
-header{display:flex;align-items:center;gap:10px;padding:17px 16px 12px;font-weight:750;font-size:1.1rem}
-header>ha-icon{color:var(--accent)}
+.card-header{display:flex;align-items:center;gap:10px;min-height:56px;margin:8px 10px;padding:7px 10px;border-radius:28px;background:var(--secondary-background-color,rgba(100,120,160,.12));font-weight:650;font-size:.82rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.title-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;background:var(--card-background-color,rgba(0,0,0,.12));color:var(--primary-text-color)}
+.title-icon ha-icon{--mdc-icon-size:20px}
+.card-title{flex:1;min-width:0;font-size:.82rem;font-weight:650;line-height:1.2}
+.collapse-chevron{flex:0 0 auto;color:var(--secondary-text-color);--mdc-icon-size:21px}
+.card-header .refresh-btn{margin-left:auto}
+ha-card.collapsed .panel{display:none}
+ha-card.collapsed .card-header{margin-bottom:8px}
 .refresh-btn{margin-left:auto;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--secondary-background-color,rgba(100,120,160,.12));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .refresh-btn ha-icon{--mdc-icon-size:20px;color:inherit}
 .refresh-btn[disabled]{opacity:.55;cursor:default}
