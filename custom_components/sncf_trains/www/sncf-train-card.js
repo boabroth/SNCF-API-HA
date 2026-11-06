@@ -108,9 +108,9 @@ class SncfTrainCard extends HTMLElement {
       const routeLimit=Math.max(1,Number(countEntity?.attributes?.train_count)||1);
       const limit=Math.max(1,Math.min(routeLimit,Number(this.config.train_lines)||routeLimit));
       const updatedAt=deviceEntities
-        .map(e=>this._hass.states[e.entity_id]?.last_updated)
+        .map(e=>this._hass.states[e.entity_id]?.attributes?.data_updated_at)
         .filter(Boolean)
-        .map(value=>new Date(value).getTime())
+        .map(value=>this._date(value))
         .filter(Number.isFinite)
         .reduce((latest,value)=>Math.max(latest,value),0);
       const trains=deviceEntities
