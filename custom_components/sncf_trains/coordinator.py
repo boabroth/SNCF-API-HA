@@ -25,8 +25,10 @@ from .const import (
     CONF_TIME_START,
     CONF_TO,
     CONF_UPDATE_INTERVAL,
+    CONF_TRAIN_COUNT,
     DEFAULT_OUTSIDE_INTERVAL,
     DEFAULT_UPDATE_INTERVAL,
+    DEFAULT_TRAIN_COUNT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -375,11 +377,16 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
             # ---------------------------------------------------------
             for attempt in range(1, max_retries + 1):
                 try:
+                    train_count = entry.data.get(
+                        CONF_TRAIN_COUNT,
+                        DEFAULT_TRAIN_COUNT,
+                    )
+
                     journeys = await self.api_client.fetch_journeys(
                         departure,
                         arrival,
                         datetime_str,
-                        count=10,
+                        count=train_count,
                     )
 
                     if journeys is not None:
