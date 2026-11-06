@@ -401,6 +401,20 @@ class SncfTrainCard extends HTMLElement {
   }
   _attachActions(groups){
     const panel=this.shadowRoot.querySelector('.panel');
+    this.shadowRoot.querySelector('[data-refresh]')?.addEventListener('click',async event=>{
+      const button=event.currentTarget;
+      if(button.disabled)return;
+      button.disabled=true;
+      button.classList.add('refreshing');
+      try{
+        await this._hass.callService('sncf_trains','refresh');
+      }catch(error){
+        console.error('SNCF Train Card: impossible de rafraîchir les données',error);
+      }finally{
+        button.disabled=false;
+        button.classList.remove('refreshing');
+      }
+    });
     panel.querySelector('[data-prev]')?.addEventListener('click',()=>{
       this._activeDirection=(this._activeDirection+groups.length-1)%groups.length;this._updatePanel(groups);
     });
@@ -465,7 +479,7 @@ class SncfTrainCard extends HTMLElement {
       this._signature=signature;
       if(!this._painted){
         this.shadowRoot.innerHTML=`<style>${this._css()}</style><ha-card>
-          <header><ha-icon icon="mdi:train"></ha-icon><span>${this._escape(this.config.title)}</span></header>
+          <header><ha-icon icon="mdi:train"></ha-icon><span>${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button></header>
           <div class="panel"></div></ha-card>`;
         this._painted=true;
       }
@@ -488,7 +502,12 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
 .train-type{overflow-wrap:anywhere}
 header{display:flex;align-items:center;gap:10px;padding:17px 16px 12px;font-weight:750;font-size:1.1rem}
-header ha-icon{color:var(--accent)}
+header>ha-icon{color:var(--accent)}
+.refresh-btn{margin-left:auto;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--secondary-background-color,rgba(100,120,160,.12));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.refresh-btn ha-icon{--mdc-icon-size:20px;color:inherit}
+.refresh-btn[disabled]{opacity:.55;cursor:default}
+.refresh-btn.refreshing ha-icon{animation:sncf-refresh-spin .8s linear infinite}
+@keyframes sncf-refresh-spin{to{transform:rotate(360deg)}}
 .panel,.trains{overflow-anchor:none;min-width:0;max-width:100%}
 nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--secondary-background-color,rgba(100,120,160,.09));border:1px solid var(--divider-color)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
