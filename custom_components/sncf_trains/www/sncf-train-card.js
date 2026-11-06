@@ -22,7 +22,7 @@ class SncfTrainCard extends HTMLElement {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
     const ids=(Array.isArray(config.device_id)?config.device_id:[config.device_id]).filter(Boolean);
     this.config={
-      title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,
+      title:'Trains SNCF',train_lines:100,visible_trains:3,scroll_trains:undefined,direction_titles:'',animation_duration:30,update_interval:30,
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
       show_track:true,show_duration:true,show_status:true,show_countdown:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
@@ -47,6 +47,7 @@ class SncfTrainCard extends HTMLElement {
         {name:'device_id',required:true,selector:{device:{multiple:true,filter:{integration:'sncf_trains'}}}},
         {name:'title',selector:{text:{}}},
         {name:'visible_trains',selector:{number:{min:1,max:10,step:1}}},
+        {name:'scroll_trains',selector:{number:{min:1,max:100,step:1}}},
         {name:'direction_titles',selector:{text:{}}},
         {name:'train_lines',selector:{number:{min:1,max:100,step:1}}},
         {name:'animation_duration',selector:{number:{min:0,max:100,step:1}}},
@@ -57,7 +58,7 @@ class SncfTrainCard extends HTMLElement {
         bool('train_emoji_axial_symmetry')
       ],
       computeLabel:s=>({
-        device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
+        device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',scroll_trains:'Trains affichés avant scroll',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
         animation_duration:'Afficher le train avant départ (minutes)',
         update_interval:'Actualisation (secondes)',
         show_countdown:'Compte à rebours avant le départ',show_track:'Afficher le rail',show_duration:'Afficher la durée',
@@ -322,6 +323,22 @@ class SncfTrainCard extends HTMLElement {
      ${count>visible?`<button type="button" class="more" data-more aria-expanded="${expanded}">${expanded?'Voir moins':`Voir plus (${count-visible} trains)`} <ha-icon icon="mdi:chevron-${expanded?'up':'down'}"></ha-icon></button>`:''}
 `;
   }
+  _applyTrainScroll(){
+    const container=this.shadowRoot.querySelector('.trains');
+    if(!container)return;
+    const limit=Number(this.config.scroll_trains);
+    const rows=container.querySelectorAll('.train-row');
+    container.classList.remove('scrollable');
+    container.style.maxHeight='';
+    if(!Number.isInteger(limit)||limit<1||rows.length<=limit)return;
+    const containerTop=container.getBoundingClientRect().top;
+    const lastVisible=rows[limit-1];
+    const maxHeight=lastVisible.getBoundingClientRect().bottom-containerTop;
+    if(maxHeight>0){
+      container.style.maxHeight=`${maxHeight}px`;
+      container.classList.add('scrollable');
+    }
+  }
   _attachActions(groups){
     const panel=this.shadowRoot.querySelector('.panel');
     panel.querySelector('[data-prev]')?.addEventListener('click',()=>{
@@ -349,6 +366,7 @@ class SncfTrainCard extends HTMLElement {
           details.style.marginTop=expanded?'12px':'0px';
           details.style.opacity=expanded?'1':'0';
         }
+        this._applyTrainScroll();
       };
       row.addEventListener('click',toggle);
       row.addEventListener('keydown',event=>{
@@ -363,6 +381,7 @@ class SncfTrainCard extends HTMLElement {
     const panel=this.shadowRoot.querySelector('.panel');
     if(!panel)return;
     panel.innerHTML=this._view(groups);
+    this._applyTrainScroll();
     this._attachActions(groups);
     this._updateLive(groups);
   }
@@ -423,6 +442,7 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
 .direction-dots span.active{width:19px;background:var(--accent)}
 .trains{padding:2px 12px 0}
+.trains.scrollable{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:0;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),margin-top .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
 .stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
