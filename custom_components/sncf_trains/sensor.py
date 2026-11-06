@@ -1,5 +1,6 @@
 """Sensors for trains hours."""
 
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
