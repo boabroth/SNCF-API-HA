@@ -110,6 +110,40 @@ def get_transport_section(journey: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def get_stops(section: dict[str, Any]) -> list[dict[str, str]]:
+    """Return the stop list for a public transport section."""
+    stop_date_times = section.get("stop_date_times", [])
+
+    if not isinstance(stop_date_times, list):
+        return []
+
+    stops = []
+
+    for stop in stop_date_times:
+        if not isinstance(stop, dict):
+            continue
+
+        stop_point = stop.get("stop_point", {})
+        if not isinstance(stop_point, dict):
+            stop_point = {}
+
+        stops.append(
+            {
+                "name": stop_point.get("name") or stop.get("name") or "Inconnu",
+                "arrival_time": format_time(stop.get("arrival_date_time", "")),
+                "departure_time": format_time(stop.get("departure_date_time", "")),
+                "base_arrival_time": format_time(
+                    stop.get("base_arrival_date_time", "")
+                ),
+                "base_departure_time": format_time(
+                    stop.get("base_departure_date_time", "")
+                ),
+            }
+        )
+
+    return stops
+
+
 # -------------------------------------------------------------------------
 # Sensor Classes
 # -------------------------------------------------------------------------
@@ -338,6 +372,7 @@ class SncfTrainSensor(
             "train_type": journey.get("train_type"),
             "train_cars": journey.get("train_cars"),
             "train_cars_source": journey.get("train_cars_source", "inconnue"),
+            "stops": get_stops(section),
         }
 
 
