@@ -1,6 +1,7 @@
 """Sensors for trains hours."""
 
 from datetime import datetime
+import re
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -112,36 +113,68 @@ def get_transport_section(journey: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
-def get_stops(section: dict[str, Any]) -> list[dict[str, str]]:
-    """Return the stop list for a public transport section."""
+def get_stops(
+    section: dict[str, Any],
+    journey: dict[str, Any] | None = None,
+) -> list[dict[str, str]]:
+    """Return the stop list, including platforms when the live source provides them."""
     stop_date_times = section.get("stop_date_times", [])
 
     if not isinstance(stop_date_times, list):
         return []
 
+    journey = journey or {}
+    platforms_by_uic = journey.get("platforms_by_uic", {})
+    if not isinstance(platforms_by_uic, dict):
+        platforms_by_uic = {}
+
     stops = []
+    valid_stops = [stop for stop in stop_date_times if isinstance(stop, dict)]
 
-    for stop in stop_date_times:
-        if not isinstance(stop, dict):
-            continue
-
+    for index, stop in enumerate(valid_stops):
         stop_point = stop.get("stop_point", {})
         if not isinstance(stop_point, dict):
             stop_point = {}
 
-        stops.append(
-            {
-                "name": stop_point.get("name") or stop.get("name") or "Inconnu",
-                "arrival_time": format_time(stop.get("arrival_date_time", "")),
-                "departure_time": format_time(stop.get("departure_date_time", "")),
-                "base_arrival_time": format_time(
-                    stop.get("base_arrival_date_time", "")
-                ),
-                "base_departure_time": format_time(
-                    stop.get("base_departure_date_time", "")
-                ),
-            }
-        )
+        identifiers = [
+            stop_point.get("id"),
+            (stop_point.get("stop_area") or {}).get("id")
+            if isinstance(stop_point.get("stop_area"), dict) else None,
+        ]
+        uic = None
+        for identifier in identifiers:
+            if not isinstance(identifier, str):
+                continue
+            match = re.search(
+                r"(?<![0-9])([0-9]{8}|00[0-9]{8})(?![0-9])",
+                identifier,
+            )
+            if match:
+                uic = match.group(1).zfill(10)
+                break
+
+        platform = platforms_by_uic.get(uic, "") if uic else ""
+        # Keep the already-known boarding and arrival platforms even when
+        # the live course response does not expose a complete stop list.
+        if index == 0:
+            platform = platform or journey.get("platform_track", "")
+        if index == len(valid_stops) - 1:
+            platform = platform or journey.get("arrival_platform_track", "")
+
+        item = {
+            "name": stop_point.get("name") or stop.get("name") or "Inconnu",
+            "arrival_time": format_time(stop.get("arrival_date_time", "")),
+            "departure_time": format_time(stop.get("departure_date_time", "")),
+            "base_arrival_time": format_time(
+                stop.get("base_arrival_date_time", "")
+            ),
+            "base_departure_time": format_time(
+                stop.get("base_departure_date_time", "")
+            ),
+        }
+        if platform:
+            item["platform"] = str(platform)
+        stops.append(item)
 
     return stops
 
@@ -374,7 +407,7 @@ class SncfTrainSensor(
             "train_type": journey.get("train_type"),
             "train_cars": journey.get("train_cars"),
             "train_cars_source": journey.get("train_cars_source", "inconnue"),
-            "stops": get_stops(section),
+            "stops": get_stops(section, journey),
         }
 
 
