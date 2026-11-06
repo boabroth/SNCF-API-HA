@@ -16,6 +16,7 @@ from .const import (
     CONF_DEPARTURE_NAME,
     CONF_FROM,
     CONF_TO,
+    CONF_TRAIN_COUNT,
     DOMAIN,
 )
 from .coordinator import SncfUpdateCoordinator
@@ -397,6 +398,7 @@ class SncfAllTrainsLineSensor(
 
         self.tid = train_id
         subentry = coordinator.entry.subentries[train_id]
+        self.train_count = int(subentry.data.get(CONF_TRAIN_COUNT, 0))
         departure_name = subentry.data.get(CONF_DEPARTURE_NAME, "Départ")
         arrival_name = subentry.data.get(CONF_ARRIVAL_NAME, "Arrivée")
         self._attr_name = "Tous les trains (ligne)"
@@ -485,6 +487,7 @@ class SncfAllTrainsLineSensor(
                 overall_has_delay = True
 
         self._attr_extra_state_attributes = {
+            "train_count": self.train_count,
             "departure_time": "; ".join(departure_times),
             "base_departure_time": "; ".join(base_departure_times),
             "delay_minutes": "; ".join(delays),
