@@ -41,6 +41,7 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
         """Initialisation."""
         self.entry = entry
         self.api_client = None
+        self.last_successful_update = None
 
         self.update_interval_minutes = entry.options.get(
             CONF_UPDATE_INTERVAL,
@@ -556,4 +557,5 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
                     self.update_interval.total_seconds() / 60,
                 )
 
+        self.last_successful_update = dt_util.utcnow()
         return trains
