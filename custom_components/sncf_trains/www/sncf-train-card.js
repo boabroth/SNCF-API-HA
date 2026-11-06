@@ -535,6 +535,7 @@ ha-card .panel{display:block;max-height:10000px;opacity:1;transform:translateY(0
 ha-card.collapsed .panel{display:block;max-height:0;opacity:0;transform:translateY(-7px);pointer-events:none}
 ha-card.collapsed .collapse-chevron{transform:rotate(180deg)}
 ha-card.collapsed .card-header{margin:0 6px;height:56px;min-height:56px}
+ha-card:not(.collapsed) .card-header{margin:0 6px}
 .refresh-btn{margin-left:auto;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--secondary-background-color,rgba(100,120,160,.12));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .refresh-btn ha-icon{--mdc-icon-size:20px;color:#fff}
 .refresh-btn[disabled]{opacity:.55;cursor:default}
@@ -604,9 +605,9 @@ nav{position:relative}
 .station{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}\n.station.depart{overflow:visible}
 .station.arrive{text-align:right}
 .station-caption{font-size:.59rem;text-transform:uppercase;letter-spacing:.08em;color:var(--secondary-text-color);font-weight:650}
-.times{display:flex;flex-direction:column;gap:2px;line-height:1.15;font-variant-numeric:tabular-nums}
- .actual{font-size:clamp(.94rem,4.5vw,1.27rem);font-weight:800;letter-spacing:-.035em;white-space:nowrap}
-.original{font-size:.72rem;color:var(--secondary-text-color);text-decoration:line-through}
+.times{display:flex;flex-direction:column;align-items:stretch;gap:2px;line-height:1.15;font-variant-numeric:tabular-nums;width:100%}
+.actual{display:block;width:100%;text-align:inherit;font-size:clamp(.94rem,4.5vw,1.27rem);font-weight:800;letter-spacing:-.035em;white-space:nowrap}
+.original{display:block;width:100%;text-align:inherit;font-size:.72rem;color:var(--secondary-text-color);text-decoration:line-through}
 .middle{min-width:16px;display:flex;align-items:center;justify-content:center;position:relative}
 .track{height:4px;width:100%;position:relative;border-radius:9px;background:var(--divider-color)}
 .track::before,.track::after{content:'';position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--secondary-text-color);opacity:.55}
