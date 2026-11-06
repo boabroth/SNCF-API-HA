@@ -1,0 +1,619 @@
+decluttering_templates:
+  train:
+    card:
+      type: custom:button-card
+      entity: '[[entity]]'
+      triggers_update:
+        - '[[entity]]'
+        - '[[all_trains]]'
+        - input_select.train_sncf_deplie
+      update_timer: 1000
+      show_name: false
+      show_icon: false
+      show_state: false
+      tap_action:
+        action: perform-action
+        perform_action: script.sncf_deplier_replier_un_train
+        data:
+          train: '[[train]]'
+      styles:
+        card:
+          - padding: 0
+          - border-radius: 14px
+          - overflow: hidden
+          - box-shadow: none
+          - margin-top: 0px
+          - background: |
+              [[[
+                const allEntity = states['[[all_trains]]'];
+                const rawTimes = allEntity?.attributes?.departure_time;
+                const times = typeof rawTimes === 'string'
+                  ? rawTimes.split(';').map(x => x.trim()).filter(Boolean)
+                  : [];
+
+                const parseDate = value => {
+                  const m = String(value || '').match(
+                    /(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})/
+                  );
+                  if (!m) return null;
+                  return new Date(
+                    Number(m[3]),
+                    Number(m[2]) - 1,
+                    Number(m[1]),
+                    Number(m[4]),
+                    Number(m[5])
+                  );
+                };
+
+                const now = new Date();
+                const nextTime = times.map(parseDate)
+                  .filter(d => d && d.getTime() > now.getTime())
+                  .sort((a, b) => a.getTime() - b.getTime())[0];
+
+                const currentTime = parseDate(entity?.attributes?.departure_time);
+                const isNext = nextTime && currentTime &&
+                  nextTime.getTime() === currentTime.getTime();
+
+                return isNext
+                  ? 'rgba(46,173,98,0.12)'
+                  : 'var(--ha-card-background, var(--card-background-color))';
+              ]]]
+          - border: |
+              [[[
+                const allEntity = states['[[all_trains]]'];
+                const rawTimes = allEntity?.attributes?.departure_time;
+                const times = typeof rawTimes === 'string'
+                  ? rawTimes.split(';').map(x => x.trim()).filter(Boolean)
+                  : [];
+
+                const parseDate = value => {
+                  const m = String(value || '').match(
+                    /(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})/
+                  );
+                  if (!m) return null;
+                  return new Date(
+                    Number(m[3]),
+                    Number(m[2]) - 1,
+                    Number(m[1]),
+                    Number(m[4]),
+                    Number(m[5])
+                  );
+                };
+
+                const now = new Date();
+                const nextTime = times.map(parseDate)
+                  .filter(d => d && d.getTime() > now.getTime())
+                  .sort((a, b) => a.getTime() - b.getTime())[0];
+
+                const currentTime = parseDate(entity?.attributes?.departure_time);
+                const isNext = nextTime && currentTime &&
+                  nextTime.getTime() === currentTime.getTime();
+
+                return isNext ? '2px solid #2EAD62' : 'none';
+              ]]]
+          - display: |
+              [[[
+                const departure1 = String(entity?.attributes?.departure_time || '');
+                const arrival1 = String(entity?.attributes?.arrival_time || '');
+                const validTime1 = value => /\b\d{2}:\d{2}\b/.test(String(value || ''));
+
+                if (!validTime1(departure1) && !validTime1(arrival1)) {
+                  return 'none';
+                }
+
+                const d1 = arrival1.match(
+                  /(\d{2})\/(\d{2})\/(\d{4}).*?(\d{2}):(\d{2})/
+                );
+
+                if (d1) {
+                  const t1 = new Date(
+                    Number(d1[3]),
+                    Number(d1[2]) - 1,
+                    Number(d1[1]),
+                    Number(d1[4]),
+                    Number(d1[5])
+                  ).getTime();
+
+                  return Date.now() >= t1 ? 'none' : 'block';
+                }
+
+                return 'block';
+              ]]]
+        grid:
+          - grid-template-columns: 1fr
+          - grid-template-rows: auto auto
+          - grid-template-areas: '"row" "details"'
+        custom_fields:
+          row:
+            - width: 100%
+          details:
+            - width: 100%
+            - overflow: hidden
+            - max-height: |
+                [[[
+                  return states['input_select.train_sncf_deplie']?.state === '[[train]]'
+                    ? '1000px'
+                    : '0px';
+                ]]]
+            - opacity: |
+                [[[
+                  return states['input_select.train_sncf_deplie']?.state === '[[train]]'
+                    ? '1'
+                    : '0';
+                ]]]
+            - transition:
+                - max-height 350ms cubic-bezier(0.4, 0, 0.2, 1)
+                - opacity 250ms ease
+      custom_fields:
+        row: |
+          [[[
+            const a1 = entity.attributes;
+            const passedColor1 = '#2EAD62';
+
+            const f1 = v => {
+              const m = String(v || '').match(/(\d{2}):(\d{2})/);
+              return m ? `${m[1]}:${m[2]}` : '--:--';
+            };
+
+            const dep1 = f1(a1.departure_time);
+            const arr1 = f1(a1.arrival_time);
+            const dur1 = a1.duration_minutes != null ? `${a1.duration_minutes} min` : '--';
+            const num1 = a1.train || a1.train_num || '--';
+            const delay1 = Number(a1.delay_minutes ?? a1.delay ?? 0);
+
+            const timeToMinutes1 = v => {
+              const m = String(v || '').match(/(\d{2}):(\d{2})/);
+              return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+            };
+
+            const now1 = new Date();
+            const nowMin1 = now1.getHours() * 60 + now1.getMinutes() + now1.getSeconds() / 60;
+            const timelineNowMin1 = nowMin1 - delay1;
+
+            let status1;
+            let color1;
+
+            if (delay1 === 0) {
+              status1 = 'À l’heure';
+              color1 = 'rgba(46,173,98)';
+            } else if (delay1 < 15) {
+              status1 = `+${delay1} min`;
+              color1 = 'var(--warning-color)';
+            } else {
+              status1 = `+${delay1} min`;
+              color1 = 'var(--error-color)';
+            }
+
+            const open1 = states['input_select.train_sncf_deplie']?.state === '[[train]]';
+            const stops1 = Array.isArray(a1.stops) ? a1.stops : [];
+
+            const points1 = stops1.map((x1, i1) => {
+              const arrival1 = x1.arrival || x1.arrival_time || x1.arrivalTime || '';
+              const departure1 = x1.departure || x1.departure_time || x1.departureTime || '';
+              const time1 = timeToMinutes1(i1 === stops1.length - 1 ? arrival1 : departure1 || arrival1);
+
+              return {
+                time: time1,
+                station: x1.station || x1.name || x1.stop_name || '--'
+              };
+            }).filter(x1 => x1.time !== null);
+
+            let position1 = 0;
+
+            if (points1.length > 1) {
+              if (timelineNowMin1 <= points1[0].time) {
+                position1 = 0;
+              } else if (timelineNowMin1 >= points1[points1.length - 1].time) {
+                position1 = 100;
+              } else {
+                for (let i1 = 0; i1 < points1.length - 1; i1++) {
+                  const p1 = points1[i1];
+                  const p2 = points1[i1 + 1];
+
+                  if (timelineNowMin1 >= p1.time && timelineNowMin1 <= p2.time) {
+                    const ratio1 = (timelineNowMin1 - p1.time) / (p2.time - p1.time);
+                    const start1 = (i1 / (points1.length - 1)) * 100;
+                    const end1 = ((i1 + 1) / (points1.length - 1)) * 100;
+                    position1 = start1 + (end1 - start1) * ratio1;
+                    break;
+                  }
+                }
+              }
+            }
+
+            let dots1 = '';
+
+            points1.forEach((p1, i1) => {
+              const left1 = points1.length > 1 ? (i1 / (points1.length - 1)) * 100 : 0;
+              const passed1 = timelineNowMin1 >= p1.time;
+              const current1 = i1 < points1.length - 1 &&
+                timelineNowMin1 >= p1.time &&
+                timelineNowMin1 < points1[i1 + 1].time;
+              const size1 = current1 ? 8 : 5;
+              const colorDot1 = passed1 ? passedColor1 : 'var(--divider-color)';
+
+              dots1 += `
+                <div style="
+                  position:absolute;left:${left1}%;top:50%;
+                  transform:translate(-50%,-50%);
+                  width:${size1}px;height:${size1}px;
+                  border-radius:50%;background:${colorDot1};z-index:3;
+                "></div>
+              `;
+            });
+
+            const allEntity = states['[[all_trains]]'];
+            const rawTimes = allEntity?.attributes?.departure_time;
+            const allTimes = typeof rawTimes === 'string'
+              ? rawTimes.split(';').map(x => x.trim()).filter(Boolean)
+              : [];
+
+            const parseDate1 = value => {
+              const m = String(value || '').match(
+                /(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})/
+              );
+              if (!m) return null;
+              return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]));
+            };
+
+            const nowDate1 = new Date();
+            const nextTime1 = allTimes.map(parseDate1)
+              .filter(d => d && d.getTime() > nowDate1.getTime())
+              .sort((a, b) => a.getTime() - b.getTime())[0];
+
+            const currentTime1 = parseDate1(a1.departure_time);
+            const next1 = nextTime1 && currentTime1 &&
+              nextTime1.getTime() === currentTime1.getTime();
+
+            const badge1 = next1 ? `
+              <div style="
+                position:absolute;top:-2px;left:0px;padding:12px 1px;
+                border-radius:0px;background:#2EAD62;color:white;
+                font-size:10px;font-weight:700;letter-spacing:.3px;
+                overflow:hidden;z-index:10;
+              ">►</div>
+            ` : '';
+
+            return `
+              <div style="position:relative;border-top:1px solid var(--divider-color);box-sizing:border-box;width:100%;">
+                ${badge1}
+                <div style="
+                  display:grid;
+                  grid-template-columns:42px minmax(70px,1fr) 42px 48px 54px 82px 22px;
+                  align-items:center;padding:0 10px;box-sizing:border-box;pointer-events:none;
+                ">
+                  <div style="text-align:center;font-size:13px;font-weight:600;">${dep1}</div>
+                  <div style="position:relative;height:35px;width:calc(100% - 20px);margin-left:10px;margin-right:10px;">
+                    <div style="position:absolute;left:4px;right:4px;top:50%;height:2px;background:var(--divider-color);transform:translateY(-50%);"></div>
+                    <div style="position:absolute;left:4px;width:calc(${position1}% - 4px);top:50%;height:2px;background:${passedColor1};transform:translateY(-50%);"></div>
+                    ${dots1}
+                    <div style="
+                      position:absolute;left:${position1}%;top:50%;
+                      transform:translate(-50%,-50%);z-index:5;
+                      width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+                      background:var(--ha-card-background,var(--card-background-color));
+                      border-radius:50%;font-size:15px;line-height:24px;
+                    ">🚆</div>
+                  </div>
+                  <div style="text-align:center;font-size:13px;font-weight:600;">${arr1}</div>
+                  <div style="text-align:center;font-size:11px;opacity:.75;">${dur1}</div>
+                  <div style="text-align:center;font-size:11px;font-weight:600;">${num1}</div>
+                  <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;font-weight:700;color:${color1};white-space:nowrap;">
+                    <span style="width:12px;height:12px;border-radius:50%;background:${color1};display:inline-block;flex-shrink:0;"></span>
+                    ${status1}
+                  </div>
+                  <div style="width:22px;height:35px;display:flex;align-items:center;justify-content:center;">
+                    <span style="
+                      width:8px;height:8px;border-right:2px solid var(--secondary-text-color);
+                      border-bottom:2px solid var(--secondary-text-color);display:block;
+                      margin-top:${open1 ? '4px' : '-4px'};
+                      transform:rotate(${open1 ? '225deg' : '45deg'});
+                    "></span>
+                  </div>
+                </div>
+              </div>
+            `;
+          ]]]
+        details: |
+          [[[
+            const stops1 = Array.isArray(entity.attributes.stops)
+              ? entity.attributes.stops
+              : [];
+
+            if (!stops1.length) return '';
+
+            const passedColor1 = '#2EAD62';
+            const now1 = new Date();
+            const nowMin1 = now1.getHours() * 60 +
+              now1.getMinutes() + now1.getSeconds() / 60;
+
+            const delay1 = Number(
+              entity.attributes.delay_minutes ??
+              entity.attributes.delay ??
+              0
+            );
+
+            const tm1 = v => {
+              const m = String(v || '').match(/(\d{2}):(\d{2})/);
+              return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+            };
+
+            const ft1 = v => {
+              const m = String(v || '').match(/(\d{2}):(\d{2})/);
+              return m ? `${m[1]}:${m[2]}` : '--:--';
+            };
+
+            const stations1 = stops1.map(x1 => {
+              const name1 = x1.station || x1.name || x1.stop_name || '--';
+
+              const arrivalRaw1 =
+                x1.arrival || x1.arrival_time || x1.arrivalTime || '';
+
+              const departureRaw1 =
+                x1.departure || x1.departure_time || x1.departureTime || '';
+
+              const baseArrivalRaw1 =
+                x1.base_arrival_time ||
+                x1.base_arrival ||
+                x1.theoretical_arrival_time ||
+                '';
+
+              const baseDepartureRaw1 =
+                x1.base_departure_time ||
+                x1.base_departure ||
+                x1.theoretical_departure_time ||
+                '';
+
+              const arrivalActual1 = tm1(arrivalRaw1);
+              const departureActual1 = tm1(departureRaw1);
+
+              /*
+               * Utilise l'horaire théorique fourni par l'intégration.
+               * Si absent, estime l'horaire initial en retirant le retard.
+               */
+              const arrivalBase1 = tm1(baseArrivalRaw1) ??
+                (arrivalActual1 !== null && delay1 !== 0
+                  ? arrivalActual1 - delay1
+                  : null);
+
+              const departureBase1 = tm1(baseDepartureRaw1) ??
+                (departureActual1 !== null && delay1 !== 0
+                  ? departureActual1 - delay1
+                  : null);
+
+              return {
+                name: name1,
+                arrivalRaw: arrivalRaw1,
+                departureRaw: departureRaw1,
+                arrivalActual: arrivalActual1,
+                departureActual: departureActual1,
+                arrivalBase: arrivalBase1,
+                departureBase: departureBase1,
+                arrivalReal: arrivalActual1,
+                departureReal: departureActual1
+              };
+            });
+
+            const rowHeight1 = 34;
+            let trainPosition1 = 0;
+            let trainVisible1 = false;
+
+            if (stations1.length === 1) {
+              trainPosition1 = 0;
+              trainVisible1 = true;
+            } else {
+              const firstDeparture1 = stations1[0].departureReal;
+              const firstArrival1 = stations1[0].arrivalReal;
+              const firstStart1 = firstDeparture1 ?? firstArrival1;
+
+              if (firstStart1 !== null && nowMin1 < firstStart1) {
+                trainPosition1 = 0;
+                trainVisible1 = false;
+              } else {
+                for (let i1 = 0; i1 < stations1.length - 1; i1++) {
+                  const current1 = stations1[i1];
+                  const nextStop1 = stations1[i1 + 1];
+
+                  const currentArrival1 = current1.arrivalReal;
+                  const currentDeparture1 = current1.departureReal;
+                  const nextArrival1 = nextStop1.arrivalReal;
+                  const nextDeparture1 = nextStop1.departureReal;
+
+                  if (
+                    currentArrival1 !== null &&
+                    currentDeparture1 !== null &&
+                    nowMin1 >= currentArrival1 &&
+                    nowMin1 < currentDeparture1
+                  ) {
+                    trainPosition1 = i1;
+                    trainVisible1 = true;
+                    break;
+                  }
+
+                  if (
+                    currentDeparture1 !== null &&
+                    nextArrival1 !== null &&
+                    nowMin1 >= currentDeparture1 &&
+                    nowMin1 < nextArrival1
+                  ) {
+                    const duration1 = nextArrival1 - currentDeparture1;
+                    const elapsed1 = nowMin1 - currentDeparture1;
+                    const ratio1 = duration1 > 0
+                      ? Math.max(0, Math.min(1, elapsed1 / duration1))
+                      : 0;
+
+                    trainPosition1 = i1 + ratio1;
+                    trainVisible1 = true;
+                    break;
+                  }
+
+                  if (
+                    nextArrival1 !== null &&
+                    nextDeparture1 !== null &&
+                    nowMin1 >= nextArrival1 &&
+                    nowMin1 < nextDeparture1
+                  ) {
+                    trainPosition1 = i1 + 1;
+                    trainVisible1 = true;
+                    break;
+                  }
+                }
+
+                const lastIndex1 = stations1.length - 1;
+                const lastStation1 = stations1[lastIndex1];
+                const lastTime1 = lastStation1.arrivalReal ??
+                  lastStation1.departureReal;
+
+                if (lastTime1 !== null && nowMin1 >= lastTime1) {
+                  trainVisible1 = false;
+                }
+              }
+            }
+
+            const trainTop1 = 17 + trainPosition1 * rowHeight1;
+
+            let html1 = `
+              <div style="
+                padding:6px 8px 10px;
+                border-top:1px solid var(--divider-color);
+                background:rgba(127,127,127,.04);
+                pointer-events:none;
+              ">
+                <div style="position:relative;padding-left:18px;padding-right:2px;">
+                  <div style="
+                    position:absolute;left:27px;top:17px;bottom:17px;width:2px;
+                    background:var(--divider-color);z-index:0;
+                  "></div>
+            `;
+
+            if (trainVisible1 && stations1.length > 1) {
+              const maxPosition1 = Math.max(
+                0,
+                Math.min(trainPosition1, stations1.length - 1)
+              );
+
+              html1 += `
+                <div style="
+                  position:absolute;left:27px;top:17px;
+                  height:${maxPosition1 * rowHeight1}px;width:2px;
+                  background:${passedColor1};z-index:1;
+                "></div>
+              `;
+            }
+
+            stations1.forEach((x1, i1) => {
+              const arrivalReal1 = x1.arrivalReal;
+              const departureReal1 = x1.departureReal;
+
+              let state1 = 'future';
+
+              if (departureReal1 !== null && nowMin1 >= departureReal1) {
+                state1 = 'passed';
+              } else if (
+                arrivalReal1 !== null &&
+                departureReal1 !== null &&
+                nowMin1 >= arrivalReal1 &&
+                nowMin1 < departureReal1
+              ) {
+                state1 = 'current';
+              }
+
+              const color1 = state1 === 'future'
+                ? 'var(--secondary-text-color)'
+                : passedColor1;
+
+              const weight1 = state1 === 'current' ? '700' : '400';
+              const dotSize1 = state1 === 'current' ? 12 : 8;
+
+              const actualMinutes1 =
+                x1.departureActual ?? x1.arrivalActual;
+
+              const baseMinutes1 =
+                x1.departureBase ?? x1.arrivalBase;
+
+              const displayTime1 = ft1(
+                x1.departureRaw || x1.arrivalRaw
+              );
+
+              /*
+               * Affiche l'horaire théorique barré uniquement
+               * si un retard est présent et que l'horaire est disponible.
+               */
+              const showBase1 =
+                delay1 > 0 &&
+                baseMinutes1 !== null &&
+                actualMinutes1 !== null &&
+                baseMinutes1 !== actualMinutes1;
+
+              const baseTimeHtml1 = showBase1
+                ? `<div style="
+                    font-size:9px;
+                    line-height:11px;
+                    color:var(--secondary-text-color);
+                    text-decoration:line-through;
+                    opacity:.75;
+                    font-weight:400;
+                  ">${ft1(
+                    `${String(Math.floor(
+                      ((baseMinutes1 % 1440) + 1440) % 1440 / 60
+                    )).padStart(2, '0')}:${String(
+                      ((baseMinutes1 % 1440) + 1440) % 1440 % 60
+                    ).padStart(2, '0')}`
+                  )}</div>`
+                : '';
+
+              html1 += `
+                <div style="
+                  position:relative;
+                  display:grid;
+                  grid-template-columns:20px minmax(0,1fr) 48px;
+                  align-items:center;
+                  min-height:${rowHeight1}px;
+                  color:${color1};
+                  z-index:2;
+                ">
+                  <div style="
+                    position:relative;width:${dotSize1}px;height:${dotSize1}px;
+                    margin-left:${state1 === 'current' ? '4px' : '6px'};
+                    border-radius:50%;background:${color1};
+                    border:2px solid var(--ha-card-background,var(--card-background-color));
+                    box-sizing:border-box;z-index:5;
+                    box-shadow:0 0 0 1px ${color1};
+                  "></div>
+
+                  <div style="
+                    font-size:12px;font-weight:${weight1};
+                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                  ">${x1.name}</div>
+
+                  <div style="
+                    text-align:right;display:flex;flex-direction:column;
+                    align-items:flex-end;justify-content:center;
+                    font-size:11px;font-weight:${weight1};
+                    white-space:nowrap;line-height:13px;
+                  ">
+                    <div>${displayTime1}</div>
+                    ${baseTimeHtml1}
+                  </div>
+                </div>
+              `;
+            });
+
+            if (trainVisible1) {
+              html1 += `
+                <div style="
+                  position:absolute;left:14px;top:${trainTop1}px;
+                  width:28px;height:28px;transform:translateY(-50%);
+                  display:flex;align-items:center;justify-content:center;
+                  border-radius:50%;font-size:18px;line-height:28px;z-index:2;
+                ">🚆</div>
+              `;
+            }
+
+            html1 += `
+                </div>
+              </div>
+            `;
+
+            return html1;
+          ]]]
