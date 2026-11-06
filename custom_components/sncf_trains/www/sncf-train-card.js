@@ -514,13 +514,15 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-inline{font-weight:650;color:var(--primary-text-color)}
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
 .train-type{overflow-wrap:anywhere}
-.card-header{display:flex;align-items:center;gap:10px;min-height:56px;margin:8px 10px;padding:7px 10px;border-radius:28px;background:var(--secondary-background-color,rgba(100,120,160,.12));font-weight:650;font-size:.82rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
-.title-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;background:var(--card-background-color,rgba(0,0,0,.12));color:var(--primary-text-color)}
+.card-header{display:flex;align-items:center;gap:10px;height:56px;min-height:56px;margin:8px 6px;padding:7px 10px;border-radius:28px;background:#262626;color:#f5f5f5;font-weight:700;font-size:.82rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background-color .2s ease}
+.title-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#171717;color:var(--primary-color,#03b5d8)}
 .title-icon ha-icon{--mdc-icon-size:20px}
-.card-title{flex:1;min-width:0;font-size:.82rem;font-weight:650;line-height:1.2}
-.collapse-chevron{flex:0 0 auto;color:var(--secondary-text-color);--mdc-icon-size:21px}
-.card-header .refresh-btn{margin-left:auto}
-ha-card.collapsed .panel{display:none}
+.card-title{flex:1;min-width:0;font-size:.82rem;font-weight:700;line-height:1.2}
+.collapse-chevron{flex:0 0 auto;color:#c7c7c7;--mdc-icon-size:21px;transition:transform .28s ease}
+.card-header .refresh-btn{margin-left:auto;background:transparent}
+ha-card .panel{display:block;max-height:10000px;opacity:1;transform:translateY(0);overflow:hidden;transition:max-height .36s ease,opacity .24s ease,transform .36s ease}
+ha-card.collapsed .panel{display:block;max-height:0;opacity:0;transform:translateY(-7px);pointer-events:none}
+ha-card.collapsed .collapse-chevron{transform:rotate(180deg)}
 ha-card.collapsed .card-header{margin-bottom:8px}
 .refresh-btn{margin-left:auto;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--secondary-background-color,rgba(100,120,160,.12));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .refresh-btn ha-icon{--mdc-icon-size:20px;color:inherit}
