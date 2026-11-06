@@ -129,7 +129,7 @@ class SncfTrainCard extends HTMLElement {
       ?`<ha-icon icon="${this._escape(v)}"></ha-icon>`
       :`<span class="emoji">${this._escape(v)}</span>`;
   }
-  _line(entity){
+  _line(entity,isNext=false){
     const a=entity.attributes,now=Date.now(),dep=this._date(a.departure_time),arr=this._date(a.arrival_time);
     const baseDep=this._time(a.base_departure_time||a.departure_time);
     const baseArr=this._time(a.base_arrival_time||a.arrival_time);
@@ -163,7 +163,7 @@ class SncfTrainCard extends HTMLElement {
       showType?`<span class="train-detail train-type">${this._escape(trainType)}</span>`:''
     ].filter(Boolean).join('');
     const countdown=this.config.show_countdown&&now<dep?`<span class="countdown" data-departure="${dep}">${this._countdown(dep,now)}</span>`:'';
-    return `<article class="train-row ${state} ${expanded?'expanded':''}" data-train-id="${this._escape(entity.entity_id)}" role="button" tabindex="0" aria-expanded="${expanded}">
+    return `<article class="train-row ${state} ${isNext?'next-train':''} ${expanded?'expanded':''}" data-train-id="${this._escape(entity.entity_id)}" role="button" tabindex="0" aria-expanded="${expanded}">
       <div class="journey">
         <div class="station depart"><span class="station-caption">Départ</span>
           <div class="times">${time(baseDep,realDep)}</div>${departureInfo}</div>
@@ -312,6 +312,8 @@ class SncfTrainCard extends HTMLElement {
     const visible=Math.max(1,Number(this.config.visible_trains)||3);
     const expanded=!!this._expanded[group.deviceId];
     const shown=expanded?group.trains:group.trains.slice(0,visible);
+    const nextTrain=this._nextTrain(group);
+    const nextTrainId=nextTrain?.entity_id;
     const name=this._escape(this._directionName(group,index));
     return `<nav aria-label="Choix du sens">
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
@@ -320,7 +322,7 @@ class SncfTrainCard extends HTMLElement {
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
      <p class="cancellation-note"><ha-icon icon="mdi:information-outline"></ha-icon><span>Les trains supprimés ne sont pas pris en compte.</span></p>
-     <div class="trains">${shown.length?shown.map(t=>this._line(t)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
+     <div class="trains">${shown.length?shown.map(t=>this._line(t,t.entity_id===nextTrainId)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
      ${count>visible?`<button type="button" class="more" data-more aria-expanded="${expanded}">${expanded?'Voir moins':`Voir plus (${count-visible} trains)`} <ha-icon icon="mdi:chevron-${expanded?'up':'down'}"></ha-icon></button>`:''}
 `;
   }
@@ -445,6 +447,7 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .trains{padding:2px 12px 0}
 .trains.scrollable{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
+.train-row.next-train{border-color:var(--accent)}
 .stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:0;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),margin-top .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
 .stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
 .stop-rail{position:absolute;left:28px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
