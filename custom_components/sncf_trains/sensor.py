@@ -397,6 +397,11 @@ class SncfTrainSensor(
                 "commercial_mode",
                 "",
             ),
+            "data_updated_at": (
+                self.coordinator.last_update_success.isoformat()
+                if self.coordinator.last_update_success
+                else None
+            ),
             "train_num": get_train_num(journey),
             "platform": journey.get("platform_track", "N/A"),
             "arrival_platform": journey.get("arrival_platform_track", "N/A"),
