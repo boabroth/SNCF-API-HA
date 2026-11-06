@@ -22,7 +22,7 @@ class SncfTrainCard extends HTMLElement {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
     const ids=(Array.isArray(config.device_id)?config.device_id:[config.device_id]).filter(Boolean);
     this.config={
-      title:'Trains SNCF',train_lines:10,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,
+      title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
       show_track:true,show_duration:true,show_status:true,show_countdown:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
@@ -48,7 +48,7 @@ class SncfTrainCard extends HTMLElement {
         {name:'title',selector:{text:{}}},
         {name:'visible_trains',selector:{number:{min:1,max:10,step:1}}},
         {name:'direction_titles',selector:{text:{}}},
-        {name:'train_lines',selector:{number:{min:1,max:10,step:1}}},
+        {name:'train_lines',selector:{number:{min:1,max:100,step:1}}},
         {name:'animation_duration',selector:{number:{min:0,max:100,step:1}}},
         {name:'update_interval',selector:{number:{min:5,max:3600,step:1}}},
         bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),
@@ -91,10 +91,15 @@ class SncfTrainCard extends HTMLElement {
       await this._registryPromise;
     }
     const now=Date.now();
-    const limit=Math.max(1,Math.min(30,Number(this.config.train_lines)||10));
     return this.config.device_id.map(deviceId=>{
-      const trains=this._registry
-        .filter(e=>e.device_id===deviceId&&e.entity_id.startsWith('sensor.')&&e.entity_id.includes('train'))
+      const deviceEntities=this._registry.filter(e=>e.device_id===deviceId);
+      const countEntity=deviceEntities
+        .map(e=>this._hass.states[e.entity_id])
+        .find(e=>Number.isFinite(Number(e?.attributes?.train_count)));
+      const routeLimit=Math.max(1,Number(countEntity?.attributes?.train_count)||1);
+      const limit=Math.max(1,Math.min(routeLimit,Number(this.config.train_lines)||routeLimit));
+      const trains=deviceEntities
+        .filter(e=>e.entity_id.startsWith('sensor.')&&e.entity_id.includes('train'))
         .map(e=>this._hass.states[e.entity_id])
         .filter(e=>e?.attributes?.departure_time&&e.attributes.arrival_time)
         .filter(e=>{const t=this._date(e.attributes.arrival_time);return Number.isFinite(t)&&t+30*60000>=now;})
