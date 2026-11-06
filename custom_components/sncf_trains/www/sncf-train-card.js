@@ -518,7 +518,7 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .title-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#171717;color:var(--primary-color,#03b5d8)}
 .title-icon ha-icon{--mdc-icon-size:20px}
 .card-title{flex:1;min-width:0;font-size:.82rem;font-weight:700;line-height:1.2}
-.collapse-chevron{flex:0 0 auto;color:#c7c7c7;--mdc-icon-size:21px;transition:transform .28s ease}
+.collapse-chevron{flex:0 0 auto;color:var(--primary-color,#03b5d8);--mdc-icon-size:16px;transition:transform .28s ease}
 .card-header .refresh-btn{margin-left:auto;background:transparent}
 ha-card .panel{display:block;max-height:10000px;opacity:1;transform:translateY(0);overflow:hidden;transition:max-height .36s ease,opacity .24s ease,transform .36s ease}
 ha-card.collapsed .panel{display:block;max-height:0;opacity:0;transform:translateY(-7px);pointer-events:none}
