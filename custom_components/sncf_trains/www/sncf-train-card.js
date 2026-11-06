@@ -375,7 +375,7 @@ class SncfTrainCard extends HTMLElement {
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
        <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div><div class="data-freshness" data-data-freshness></div></div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
-       <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" title="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
+       <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" aria-expanded="false" data-tooltip="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
      <div class="trains">${shown.length?shown.map(t=>this._line(t,t.entity_id===nextTrainId)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
@@ -426,7 +426,20 @@ class SncfTrainCard extends HTMLElement {
         button.classList.remove('refreshing');
       }
     });
-    panel.querySelector('[data-prev]')?.addEventListener('click',()=>{
+    const cancellationInfo=panel.querySelector('.cancellation-info');
+    cancellationInfo?.addEventListener('click',event=>{
+      event.stopPropagation();
+      const nav=cancellationInfo.closest('nav');
+      nav?.classList.toggle('show-cancellation-tooltip');
+      cancellationInfo.setAttribute('aria-expanded',String(nav?.classList.contains('show-cancellation-tooltip')));
+    });
+    panel.addEventListener('click',event=>{
+      if(event.target.closest('.cancellation-info'))return;
+      panel.querySelector('nav.show-cancellation-tooltip')?.classList.remove('show-cancellation-tooltip');
+      panel.querySelector('.cancellation-info')?.setAttribute('aria-expanded','false');
+    });
+    const previousButton=panel.querySelector('[data-prev]');
+    previousButton?.addEventListener('click',()=>{
       this._activeDirection=(this._activeDirection+groups.length-1)%groups.length;this._updatePanel(groups);
     });
     panel.querySelector('[data-next]')?.addEventListener('click',()=>{
@@ -530,8 +543,10 @@ ha-card.collapsed .card-header{margin:0 6px;height:56px;min-height:56px}
 .panel,.trains{overflow-anchor:none;min-width:0;max-width:100%}
 nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--secondary-background-color,rgba(100,120,160,.09));border:1px solid var(--divider-color)}
 nav{position:relative}
-.cancellation-info{position:absolute;top:5px;right:7px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--warning-color,#f0b44d);cursor:help}
+.cancellation-info{position:absolute;top:5px;right:7px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--secondary-text-color);cursor:pointer;z-index:3}
 .cancellation-info ha-icon{--mdc-icon-size:18px}
+.cancellation-info::after{content:attr(data-tooltip);position:absolute;top:32px;right:0;width:max-content;max-width:min(230px,70vw);padding:9px 11px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);color:var(--primary-text-color);font-size:.72rem;font-weight:500;line-height:1.35;text-align:left;white-space:normal;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s ease,transform .15s ease;pointer-events:none}
+.cancellation-info:hover::after,.cancellation-info:focus-visible::after,nav.show-cancellation-tooltip .cancellation-info::after{opacity:1;visibility:visible;transform:translateY(0)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
 .direction-label span{display:block;font-size:.92rem;font-weight:750;overflow-wrap:anywhere}
@@ -559,9 +574,11 @@ nav{position:relative}
 .stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
-.stop-row.next-stop .stop-name{color:var(--accent);font-weight:850}
+.stop-row.next-stop .stop-name{color:var(--primary-text-color);font-weight:500}
 .stop-row.next-stop .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .next-stop-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.52rem;font-weight:800;letter-spacing:.02em;vertical-align:middle}
+.late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
+.late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
 .stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stop-time-list{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}
  .stop-time{display:flex;align-items:center;gap:5px;min-height:17px}
