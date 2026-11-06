@@ -235,14 +235,19 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 |-----------|------|--------|-------------|
 | `device_id` | `string` ou `list` | requis | Appareil(s) SNCF à afficher
 | `title` | `string` | `Trains SNCF` | Titre de la carte
-| `visible_trains` | `number` | 	`3` | Trains affichés avant le bouton « Voir plus »
-| `train_lines` | `number` | 	`10` | Nombre maximum de trains par sens
+| `visible_trains` | `number` | `3` | Trains affichés avant le bouton « Voir plus » (1 à 10) |
+| `scroll_trains` | `number` | (vide) | Nombre de trains visibles dans la liste défilante (1 à 100). Vide : aucun scroll ; le défilement apparaît uniquement si le nombre de trains dépasse cette valeur |
+| `train_lines` | `number` | `10` | Nombre maximum de trains par sens
 | `direction_titles` | `string` | (vide) | Titres des sens, séparés par `|` (sinon, la direction du premier train)
 | `update_interval` | `number` | `30` | Rafraîchissement de l'affichage, en secondes (minimum 5). Les anciennes valeurs en millisecondes (≥ 5000) sont converties automatiquement
-| `show_countdown` | `boolean` | `true` | Compte à rebours avant le départ
+| `show_countdown` | `boolean` | `true` | Compte à rebours avant le départ sur chaque train
 | `show_track` | `boolean` | `true` | Barre de progression du train
 | `show_duration` | `boolean` | `true` | Durée du trajet
 | `show_status` | `boolean` | `true` | Statut (à l'heure, retard, en circulation, arrivé)
+| `show_platform` | `boolean` | `true` | Afficher la voie de départ lorsqu'elle est connue
+| `show_arrival_platform` | `boolean` | `true` | Afficher la voie d'arrivée lorsqu'elle est connue
+| `show_train_units` | `boolean` | `true` | Afficher le nombre de rames lorsqu'il est connu
+| `show_train_type` | `boolean` | `true` | Afficher le type de matériel lorsqu'il est connu
 | `train_emoji` | `string` | `mdi:train` | Icône `mdi:` ou emoji affiché sur la barre
 
 ### Prérequis et limites de la carte
@@ -252,9 +257,18 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 - Les trains arrivés depuis plus de 30 minutes sont masqués.
 - Le libellé « TER » est affiché pour tous les trains.
 
+### Fonctionnalités
+
+- Navigation entre plusieurs trajets avec leur nom et le nombre de trains disponibles.
+- Compte à rebours du prochain départ pour chaque trajet, avec la voie de départ lorsqu'elle est connue.
+- Affichage des horaires, retards, durée, statut et progression du train.
+- Dépliage du détail du parcours et des arrêts intermédiaires.
+- Option « Trains affichés avant Voir plus » pour limiter la liste initiale.
+- Option facultative « Trains affichés avant scroll » pour limiter la hauteur de la liste et faire défiler les trains à l'intérieur de la carte.
+
 ### Exemple d'affichage
 
-<img width="375" height="580" alt="image" src="https://github.com/user-attachments/assets/2ee6865d-4f6d-48a1-ae2c-fb44022c72b4" />
+<img width="375" height="580" alt="SNCF Train Card" src="https://github.com/user-attachments/assets/2ee6865d-4f6d-48a1-ae2c-fb44022c72b4" />
 
 ---
 
@@ -268,11 +282,6 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 
 <img width="1027" height="579" alt="image" src="https://github.com/user-attachments/assets/cfc83131-4048-4b1e-a3eb-e114e6de3f70" />
 
-**Dashboard Lovelace :**
-
-<img width="315" height="360" alt="dashboard" src="https://github.com/user-attachments/assets/033fd0ce-ab61-4e54-83de-4bdb85d8aa58" />
-
----
 
 ## 🛠 Développement
 
