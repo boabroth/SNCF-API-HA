@@ -254,6 +254,21 @@ class SncfTrainCard extends HTMLElement {
   }
   _updateLive(groups){
     const now=Date.now();
+    const nextContainer=this.shadowRoot.querySelector('[data-next-departure]');
+    if(nextContainer){
+      const index=Math.max(0,Math.min(this._activeDirection,groups.length-1));
+      const next=this._nextTrain(groups[index],now);
+      if(next){
+        const departure=this._date(next.attributes.departure_time);
+        const platform=String(next.attributes.platform||'').trim();
+        const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(platform.toUpperCase());
+        nextContainer.innerHTML=`<ha-icon icon="mdi:clock-fast"></ha-icon><span>Prochain train ${this._countdown(departure,now).toLowerCase()}</span>${validPlatform?`<span class="next-platform">Voie ${this._escape(platform)}</span>`:''}`;
+        nextContainer.classList.remove('empty-next');
+      }else{
+        nextContainer.textContent='Aucun prochain train';
+        nextContainer.classList.add('empty-next');
+      }
+    }
     this.shadowRoot.querySelectorAll('[data-departure]').forEach(el=>{
       const dep=Number(el.dataset.departure);
       el.textContent=this._countdown(dep,now);
@@ -272,6 +287,12 @@ class SncfTrainCard extends HTMLElement {
         row.classList.toggle('passed',Number.isFinite(eventTime)&&now>=eventTime);
       });
     });
+  }
+  _nextTrain(group,now=Date.now()){
+    if(!group?.trains?.length)return null;
+    return group.trains
+      .filter(train=>this._date(train.attributes.departure_time)>now)
+      .sort((a,b)=>this._date(a.attributes.departure_time)-this._date(b.attributes.departure_time))[0]||null;
   }
   _directionName(group,index){
     const configured=String(this.config.direction_titles||'').split('|').map(s=>s.trim());
@@ -292,7 +313,7 @@ class SncfTrainCard extends HTMLElement {
     const name=this._escape(this._directionName(group,index));
     return `<nav aria-label="Choix du sens">
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small></div>
+       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div></div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
@@ -394,6 +415,10 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
 .direction-label span{display:block;font-size:.92rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
+.next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--accent);font-size:.72rem;font-weight:750}
+.next-departure ha-icon{--mdc-icon-size:15px}
+.next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
+.next-platform{padding:2px 6px;border-radius:5px;background:#1976d2;color:#fff;font-size:.64rem;font-weight:750;white-space:nowrap}
 .direction-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 5px}
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
 .direction-dots span.active{width:19px;background:var(--accent)}
