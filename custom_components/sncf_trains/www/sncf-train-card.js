@@ -224,7 +224,7 @@ class SncfTrainCard extends HTMLElement {
       </div>`;
     }).join('');
     const height=Math.max(36,(stops.length-1)*36);
-    return `<div class="stop-details" style="max-height:${expanded?stops.length*36+40:0}px;opacity:${expanded?1:0}">
+    return `<div class="stop-details" style="height:${expanded?stops.length*36:0}px;max-height:${expanded?stops.length*36+40:0}px;opacity:${expanded?1:0}">
       <div class="stop-timeline" data-times="${eventTimes.join(',')}" style="height:${stops.length*36}px">
         <div class="stop-rail"></div>
         <div class="stop-rail-fill" style="height:${position*36}px"></div>
@@ -324,6 +324,7 @@ class SncfTrainCard extends HTMLElement {
         row.setAttribute('aria-expanded',String(expanded));
         const details=row.querySelector('.stop-details');
         if(details){
+          details.style.height=expanded?`${details.scrollHeight}px`:'0px';
           details.style.maxHeight=expanded?`${details.scrollHeight}px`:'0px';
           details.style.opacity=expanded?'1':'0';
         }
@@ -398,7 +399,7 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .direction-dots span.active{width:19px;background:var(--accent)}
 .trains{padding:2px 12px 0}
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
-.stop-details{overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:12px;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+.stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:12px;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
 .stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
 .stop-rail{position:absolute;left:28px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
 .stop-rail-fill{position:absolute;left:28px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
