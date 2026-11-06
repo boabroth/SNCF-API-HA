@@ -375,9 +375,9 @@ class SncfTrainCard extends HTMLElement {
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
        <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div><div class="data-freshness" data-data-freshness></div></div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
+       <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" title="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
-     <p class="cancellation-note"><ha-icon icon="mdi:information-outline"></ha-icon><span>Les trains supprimés ne sont pas pris en compte.</span></p>
      <div class="trains">${shown.length?shown.map(t=>this._line(t,t.entity_id===nextTrainId)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
      ${count>visible?`<button type="button" class="more" data-more aria-expanded="${expanded}">${expanded?'Voir moins':`Voir plus (${count-visible} trains)`} <ha-icon icon="mdi:chevron-${expanded?'up':'down'}"></ha-icon></button>`:''}
 `;
@@ -529,6 +529,9 @@ ha-card.collapsed .card-header{margin:0 6px;height:56px;min-height:56px}
 @keyframes sncf-refresh-spin{to{transform:rotate(360deg)}}
 .panel,.trains{overflow-anchor:none;min-width:0;max-width:100%}
 nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--secondary-background-color,rgba(100,120,160,.09));border:1px solid var(--divider-color)}
+nav{position:relative}
+.cancellation-info{position:absolute;top:5px;right:7px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--warning-color,#f0b44d);cursor:help}
+.cancellation-info ha-icon{--mdc-icon-size:18px}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
 .direction-label span{display:block;font-size:.92rem;font-weight:750;overflow-wrap:anywhere}
@@ -617,8 +620,6 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--divider-color);border-radius:12px;background:var(--secondary-background-color,rgba(100,120,160,.09));color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .more ha-icon{--mdc-icon-size:19px}
 .empty{padding:20px;text-align:center;color:var(--secondary-text-color)}
-.cancellation-note{display:flex;justify-content:center;align-items:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.7rem;text-align:center;line-height:1.35}
-.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:370px){.trains{padding:2px 8px 0}.train-row{padding:11px 9px}.actual{font-size:1.1rem}.journey{gap:6px}}
 @media(prefers-reduced-motion:reduce){.moving-train,.track-fill{transition:none}}
