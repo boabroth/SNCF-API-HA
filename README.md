@@ -113,6 +113,45 @@ Obtenez votre clé ici : https://numerique.sncf.com/startup/api/ -> Site HS
 
 ---
 
+## 🖥️ Tableau de bord Lovelace (exemple)
+
+Le dépôt fournit un modèle de carte Lovelace réutilisable pour afficher les trains sous forme de lignes compactes, avec horaires, durée, numéro, retard, progression du train et détail des arrêts.
+
+### Fichiers
+
+- [Modèle complet `decluttering_templates.yaml`](examples/lovelace/decluttering_templates.yaml) : bloc YAML à intégrer au tableau de bord.
+- Ce modèle utilise les cartes personnalisées **Decluttering Card** et **Button Card** (à installer via HACS).
+
+### Installation
+
+1. Dans Home Assistant, ouvrez le tableau de bord concerné, puis **Modifier le tableau de bord** et l'éditeur de configuration YAML brut.
+2. Copiez le contenu du fichier `examples/lovelace/decluttering_templates.yaml` dans la configuration du tableau de bord, au niveau racine, sous la clé `decluttering_templates:`. Si cette clé existe déjà, ajoutez le modèle `train:` à la liste existante au lieu de créer une seconde clé.
+3. Dans la vue où vous souhaitez afficher les trains, ajoutez une carte `custom:decluttering-card` qui appelle le modèle `train` et transmet ses variables. Exemple :
+
+```yaml
+type: custom:decluttering-card
+template: train
+variables:
+  - entity: sensor.monaco_a_cannes_train_1
+  - train: Train 1
+  - all_trains: sensor.sncf_tous_les_trains_ligne_1
+```
+
+4. Remplacez les identifiants d'entités de l'exemple par ceux créés chez vous par l'intégration SNCF Trains.
+
+### Dépendances et entités attendues
+
+- `custom:decluttering-card` et `custom:button-card` doivent être installées et chargées dans Home Assistant.
+- Le modèle attend un `input_select.train_sncf_deplie` et le script `script.sncf_deplier_replier_un_train` pour ouvrir ou fermer le détail d'un train.
+- La variable `entity` désigne le capteur individuel du train.
+- La variable `train` est le libellé utilisé pour identifier le train ouvert.
+- La variable `all_trains` désigne le capteur récapitulatif de la ligne ; son attribut `departure_time` est utilisé pour mettre en évidence le prochain départ.
+- Les attributs `stops` des capteurs individuels alimentent le détail des arrêts. Ils sont fournis par les versions de l'intégration qui incluent l'amélioration correspondante.
+
+> **Important :** ce fichier contient le modèle de carte réutilisable, pas une vue complète prête à l'emploi. Il faut ajouter une instance `custom:decluttering-card` par capteur de train et adapter les entités, le sélecteur et le script à votre configuration. Le modèle utilise également `custom:button-card` pour son rendu.
+
+---
+
 ## 🔔 Exemples d'automatisations Home Assistant
 
 Les exemples suivants utilisent les **attributs d'un capteur individuel de train** (et non le capteur récapitulatif de la ligne). Remplacez `sensor.sncf_train_1_exemple` par l'identifiant réel visible dans **Outils de développement → États**, ainsi que `notify.mobile_app_mon_telephone` par votre service de notification.
