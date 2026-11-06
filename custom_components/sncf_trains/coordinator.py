@@ -286,6 +286,23 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
                     journey["platform_track"] = str(platform["track"])
 
                 if detail:
+                    # Keep every platform exposed by the live course details,
+                    # not only the boarding and destination platforms.
+                    platforms_by_uic = {}
+                    for course_stop in (detail.get("JourneyStop") or []):
+                        if not isinstance(course_stop, dict):
+                            continue
+                        course_uic = str(course_stop.get("uic", "")).zfill(10)
+                        course_platform = course_stop.get("platform") or {}
+                        if (
+                            course_uic.isdigit()
+                            and isinstance(course_platform, dict)
+                            and course_platform.get("track")
+                        ):
+                            platforms_by_uic[course_uic] = str(course_platform["track"])
+                    if platforms_by_uic:
+                        journey["platforms_by_uic"] = platforms_by_uic
+
                     # The arrival stop is the destination of the train section,
                     # not necessarily the final terminus of the circulation.
                     section = next(
