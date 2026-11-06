@@ -90,8 +90,14 @@ class SncfTrainCard extends HTMLElement {
         .finally(()=>{this._registryPromise=null;});
       await this._registryPromise;
     }
+    if(!this._deviceRegistryPromise)this._deviceRegistryPromise=this._hass.callWS({type:'config/device_registry/list'})
+      .then(data=>{this._deviceRegistry=data;return data;})
+      .finally(()=>{this._deviceRegistryPromise=null;});
+    await this._deviceRegistryPromise;
     const now=Date.now();
     return this.config.device_id.map(deviceId=>{
+      const device=this._deviceRegistry.find(d=>d.id===deviceId);
+      const deviceName=String(device?.name_by_user||device?.name||'').replace(/^SNCF\\s+/i,'').trim();
       const deviceEntities=this._registry.filter(e=>e.device_id===deviceId);
       const countEntity=deviceEntities
         .map(e=>this._hass.states[e.entity_id])
@@ -105,7 +111,7 @@ class SncfTrainCard extends HTMLElement {
         .filter(e=>{const t=this._date(e.attributes.arrival_time);return Number.isFinite(t)&&t+30*60000>=now;})
         .sort((a,b)=>this._date(a.attributes.departure_time)-this._date(b.attributes.departure_time))
         .slice(0,limit);
-      return {deviceId,trains};
+      return {deviceId,deviceName,trains};
     });
   }
   _date(value){
@@ -271,6 +277,9 @@ class SncfTrainCard extends HTMLElement {
   _directionName(group,index){
     const configured=String(this.config.direction_titles||'').split('|').map(s=>s.trim());
     if(configured[index])return configured[index];
+    // Prefer the route configured in the Home Assistant device name.
+    // The SNCF API's direction can be a destination label repeated twice.
+    if(group.deviceName)return group.deviceName;
     const a=group.trains[0]?.attributes;
     return a?.route_name||a?.direction||`Trajet ${index+1}`;
   }
@@ -402,9 +411,9 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .stop-time-list{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}
 .stop-time{display:flex;align-items:baseline;gap:5px}
 .stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
-.stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
 .stop-time strong{font-size:.69rem;font-weight:700}
-.stop-times>small{font-size:.59rem;color:var(--secondary-text-color);text-decoration:line-through;font-weight:400}
+.stop-times>small{font-size:.62rem;color:var(--primary-text-color);opacity:.78;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500}
 .stop-train-marker{position:absolute;left:14px;transform:translateY(-50%);width:28px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:20px;color:inherit}
 .stop-train-marker .emoji{font-size:18px;line-height:1;color:inherit}
