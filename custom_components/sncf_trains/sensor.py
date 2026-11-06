@@ -398,8 +398,8 @@ class SncfTrainSensor(
                 "",
             ),
             "data_updated_at": (
-                self.coordinator.last_update_success.isoformat()
-                if self.coordinator.last_update_success
+                self.coordinator.last_successful_update.isoformat()
+                if self.coordinator.last_successful_update
                 else None
             ),
             "train_num": get_train_num(journey),
