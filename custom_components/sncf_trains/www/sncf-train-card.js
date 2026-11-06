@@ -206,12 +206,11 @@ class SncfTrainCard extends HTMLElement {
       const baseDeparture=String(stop.base_departure_time||'').trim();
       const eventTime=this._date(index===stops.length-1?(arrival||departure):(departure||arrival));
       const passed=Number.isFinite(eventTime)&&now>=eventTime;
+      const platform=String(stop.platform||'').trim();
       const actualTimes=[
         arrival? `<span class="stop-time"><small>Arr.</small><strong>${this._time(arrival)}</strong></span>`:'',
-        departure? `<span class="stop-time"><small>Départ</small><strong>${this._time(departure)}</strong></span>`:''
+        departure? `<span class="stop-time departure-time"><small>Départ</small><strong>${this._time(departure)}</strong><span class="stop-platform-slot">${platform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`:''
       ].filter(Boolean).join('');
-      const platform=String(stop.platform||'').trim();
-      const platformInfo=platform?`<span class="stop-platform">Voie ${this._escape(platform)}</span>`:'';
       const baseTimes=[
         baseArrival? `ARR. ${this._time(baseArrival)}`:'',
         baseDeparture? `DÉPART ${this._time(baseDeparture)}`:''
@@ -220,7 +219,7 @@ class SncfTrainCard extends HTMLElement {
       return `<div class="stop-row ${passed?'passed':''}">
         <span class="stop-dot"></span>
         <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}</span>
-        <span class="stop-times"><span class="stop-time-list">${actualTimes||'<span class="stop-time"><strong>--:--</strong></span>'}</span>${platformInfo}${showBase?`<small>${this._escape(baseTimes.join(' · '))}</small>`:''}</span>
+        <span class="stop-times"><span class="stop-time-list">${actualTimes||'<span class="stop-time"><strong>--:--</strong></span>'}</span>${showBase?`<small>${this._escape(baseTimes.join(' · '))}</small>`:''}</span>
       </div>`;
     }).join('');
     const height=Math.max(36,(stops.length-1)*36);
@@ -412,7 +411,7 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stop-time-list{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}
 .stop-time{display:flex;align-items:baseline;gap:5px}
-.stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
+.departure-time{gap:5px}.stop-platform-slot{display:inline-flex;align-items:center;justify-content:flex-start;flex:0 0 34px;width:34px;height:17px}.stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;min-width:22px;border-radius:4px;background:#1976d2;color:#fff;font-size:.58rem;font-weight:750;line-height:1.2;white-space:nowrap}.stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
 .stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
 .stop-time strong{font-size:.69rem;font-weight:700}
 .stop-times>small{font-size:.62rem;color:var(--primary-text-color);opacity:.9;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500}
