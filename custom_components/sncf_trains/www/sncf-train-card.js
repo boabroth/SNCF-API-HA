@@ -198,19 +198,21 @@ class SncfTrainCard extends HTMLElement {
       const departure=String(stop.departure_time||'').trim();
       const baseArrival=String(stop.base_arrival_time||'').trim();
       const baseDeparture=String(stop.base_departure_time||'').trim();
-      const actualParts=[
-        arrival? `Arr. ${this._time(arrival)}`:'',
-        departure? `Dép. ${this._time(departure)}`:''
-      ].filter(Boolean);
-      const baseParts=[
+      const eventTime=this._date(index===stops.length-1?(arrival||departure):(departure||arrival));
+      const passed=Number.isFinite(eventTime)&&now>=eventTime;
+      const actualTimes=[
+        arrival? `<span class="stop-time"><small>Arr.</small><strong>${this._time(arrival)}</strong></span>`:'',
+        departure? `<span class="stop-time"><small>Départ</small><strong>${this._time(departure)}</strong></span>`:''
+      ].filter(Boolean).join('');
+      const baseTimes=[
         baseArrival? `Arr. ${this._time(baseArrival)}`:'',
-        baseDeparture? `Dép. ${this._time(baseDeparture)}`:''
+        baseDeparture? `Départ ${this._time(baseDeparture)}`:''
       ].filter(Boolean);
-      const showBase=Number(entity.attributes.delay_minutes)>0&&baseParts.length&&baseParts.join(' · ')!==actualParts.join(' · ');
-      return `<div class="stop-row">
+      const showBase=Number(entity.attributes.delay_minutes)>0&&baseTimes.length;
+      return `<div class="stop-row ${passed?'passed':''}">
         <span class="stop-dot"></span>
         <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}</span>
-        <span class="stop-times"><span>${this._escape(actualParts.join(' · ')||'--:--')}</span>${showBase?`<small>${this._escape(baseParts.join(' · '))}</small>`:''}</span>
+        <span class="stop-times"><span class="stop-time-list">${actualTimes||'<span class="stop-time"><strong>--:--</strong></span>'}</span>${showBase?`<small>${this._escape(baseTimes.join(' · '))}</small>`:''}</span>
       </div>`;
     }).join('');
     const height=Math.max(36,(stops.length-1)*36);
@@ -218,7 +220,7 @@ class SncfTrainCard extends HTMLElement {
       <div class="stop-timeline" data-times="${eventTimes.join(',')}" style="height:${stops.length*36}px">
         <div class="stop-rail"></div>
         <div class="stop-rail-fill" style="height:${position*36}px"></div>
-        <span class="stop-train-marker" style="top:${17+position*36}px">🚆</span>
+        <span class="stop-train-marker" style="top:${17+position*36}px">${this._icon(this.config.train_emoji,'mdi:train')}</span>
         ${rows}
       </div>
     </div>`;
@@ -257,6 +259,11 @@ class SncfTrainCard extends HTMLElement {
       const marker=timeline.querySelector('.stop-train-marker');
       if(fill)fill.style.height=`${position*36}px`;
       if(marker)marker.style.top=`${17+position*36}px`;
+      const now=Date.now();
+      timeline.querySelectorAll('.stop-row').forEach((row,index)=>{
+        const eventTime=times[index];
+        row.classList.toggle('passed',Number.isFinite(eventTime)&&now>=eventTime);
+      });
     });
   }
   _directionName(group,index){
@@ -360,7 +367,7 @@ class SncfTrainCard extends HTMLElement {
   _css(){return `
 :host{display:block;min-width:0;max-width:100%;overflow-anchor:none;--accent:var(--primary-color,#4c91ff)}
 *{box-sizing:border-box}
-ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-background,var(--card-background-color));color:var(--primary-text-color);border-radius:20px;overflow:hidden;border:1px solid var(--divider-color);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-background,var(--card-background-color));color:var(--primary-text-color);border-radius:28px;overflow:hidden;border:0;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .train-details{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:.72rem;color:var(--secondary-text-color);min-width:0}
 .platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:.79rem;font-weight:700;white-space:nowrap;color:var(--primary-text-color)}\n.platform-line strong{font-size:1.12rem;font-weight:850;color:var(--primary-color,#03a9f4)}\n.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .train-detail ha-icon{--mdc-icon-size:15px;flex-shrink:0}
@@ -382,17 +389,31 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stop-details{overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:12px;transition:max-height .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
 .stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
-.stop-rail{position:absolute;left:27px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
-.stop-rail-fill{position:absolute;left:27px;top:17px;width:2px;background:var(--success-color,#2ead62);transition:height .5s ease}
+.stop-rail{position:absolute;left:28px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
+.stop-rail-fill{position:absolute;left:28px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
 .stop-row{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;min-height:36px;gap:6px;z-index:1}
-.stop-dot{width:8px;height:8px;margin-left:5px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color)}
+.stop-dot{width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color);transform:translateX(1px)}
+.stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
-.stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:1px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
-.stop-times small{font-size:.61rem;color:var(--secondary-text-color);text-decoration:line-through;font-weight:400}
-.stop-train-marker{position:absolute;left:13px;transform:translateY(-50%);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:17px;line-height:28px;background:var(--secondary-background-color,var(--card-background-color));z-index:2;transition:top .5s ease}
-.expand-chevron{display:flex;justify-content:center;align-items:center;height:28px;margin:0 -12px;color:var(--secondary-text-color);opacity:.8}
+.stop-row.passed .stop-name{color:var(--accent)}
+.stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stop-time-list{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.stop-time{display:flex;align-items:baseline;gap:5px}
+.stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.stop-time strong{font-size:.69rem;font-weight:700}
+.stop-times>small{font-size:.59rem;color:var(--secondary-text-color);text-decoration:line-through;font-weight:400}
+.stop-train-marker{position:absolute;left:14px;transform:translateY(-50%);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));z-index:2;transition:top .5s ease}
+.stop-train-marker ha-icon{--mdc-icon-size:20px;color:var(--accent)}
+.stop-train-marker .emoji{font-size:18px;line-height:1}
+.expand-chevron{display:flex;justify-content:center;align-items:center;height:18px;margin:0 -12px;color:var(--secondary-text-color);opacity:.8}
 .expand-chevron ha-icon{--mdc-icon-size:19px;transition:transform .3s ease}
 .train-row.expanded .expand-chevron ha-icon{transform:rotate(180deg)}
+.late.moderate .stop-rail-fill,.late.moderate .stop-row.passed .stop-dot{background:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
+.late.moderate .stop-row.passed .stop-dot{box-shadow:0 0 0 1px var(--sncf-warning-color,var(--warning-color,#f59e0b))}
+.late.moderate .stop-row.passed .stop-name{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
+.late.severe .stop-rail-fill,.late.severe .stop-row.passed .stop-dot{background:var(--error-color,#e53935)}
+.late.severe .stop-row.passed .stop-dot{box-shadow:0 0 0 1px var(--error-color,#e53935)}
+.late.severe .stop-row.passed .stop-name{color:var(--error-color,#e53935)}
 .train-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.stop-details,.expand-chevron ha-icon,.stop-train-marker,.stop-rail-fill{transition:none}}
 .journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:8px;min-width:0;width:100%}
@@ -428,11 +449,11 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .late.severe .moving-train{color:var(--error-color,#e53935)}
 .running .status{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .arrived .status{color:var(--secondary-text-color);background:var(--secondary-background-color)}
-.cancellation-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:8px 14px 15px;color:var(--secondary-text-color);font-size:.69rem;line-height:1.4;text-align:center}.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
+.cancellation-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.69rem;line-height:1.4;text-align:center}.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--divider-color);border-radius:12px;background:var(--secondary-background-color,rgba(100,120,160,.09));color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .more ha-icon{--mdc-icon-size:19px}
 .empty{padding:20px;text-align:center;color:var(--secondary-text-color)}
-.cancellation-note{display:flex;justify-content:center;align-items:center;gap:6px;margin:10px 15px 15px;color:var(--secondary-text-color);font-size:.7rem;text-align:center;line-height:1.35}
+.cancellation-note{display:flex;justify-content:center;align-items:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.7rem;text-align:center;line-height:1.35}
 .cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:370px){.trains{padding:2px 8px 0}.train-row{padding:11px 9px}.actual{font-size:1.1rem}.journey{gap:6px}}
