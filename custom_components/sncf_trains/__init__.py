@@ -59,6 +59,16 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         )
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _setup_frontend)
 
+    if not hass.services.has_service(DOMAIN, "refresh"):
+        async def _async_refresh(_call: Any) -> None:
+            """Refresh all configured SNCF journeys immediately."""
+            for config_entry in hass.config_entries.async_entries(DOMAIN):
+                coordinator = getattr(config_entry, "runtime_data", None)
+                if coordinator is not None:
+                    await coordinator.async_request_refresh()
+
+        hass.services.async_register(DOMAIN, "refresh", _async_refresh)
+
     return True
 
 
