@@ -1,0 +1,3 @@
+refresh:
+  name: Actualiser les trajets
+  description: Force la récupération immédiate des horaires et des informations des trajets SNCF configurés.
