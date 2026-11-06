@@ -17,6 +17,8 @@ class SncfTrainCard extends HTMLElement {
     this._expanded={};
     this._signature='';
     this._painted=false;
+    this._platformHistory={};
+    this._platformChanges={};
   }
   setConfig(config) {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
@@ -105,6 +107,12 @@ class SncfTrainCard extends HTMLElement {
         .find(e=>Number.isFinite(Number(e?.attributes?.train_count)));
       const routeLimit=Math.max(1,Number(countEntity?.attributes?.train_count)||1);
       const limit=Math.max(1,Math.min(routeLimit,Number(this.config.train_lines)||routeLimit));
+      const updatedAt=deviceEntities
+        .map(e=>this._hass.states[e.entity_id]?.last_updated)
+        .filter(Boolean)
+        .map(value=>new Date(value).getTime())
+        .filter(Number.isFinite)
+        .reduce((latest,value)=>Math.max(latest,value),0);
       const trains=deviceEntities
         .filter(e=>e.entity_id.startsWith('sensor.')&&e.entity_id.includes('train'))
         .map(e=>this._hass.states[e.entity_id])
@@ -112,7 +120,7 @@ class SncfTrainCard extends HTMLElement {
         .filter(e=>{const t=this._date(e.attributes.arrival_time);return Number.isFinite(t)&&t+30*60000>=now;})
         .sort((a,b)=>this._date(a.attributes.departure_time)-this._date(b.attributes.departure_time))
         .slice(0,limit);
-      return {deviceId,deviceName,trains};
+      return {deviceId,deviceName,trains,updatedAt};
     });
   }
   _date(value){
@@ -122,6 +130,34 @@ class SncfTrainCard extends HTMLElement {
     return new Date(value).getTime();
   }
   _time(v){const d=this._date(v);return Number.isFinite(d)?new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'--:--';}
+  _validPlatform(value){const platform=String(value||'').trim();return platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE','?'].includes(platform.toUpperCase())?platform:'';}
+  _trackPlatformChanges(groups){
+    const now=Date.now();
+    for(const group of groups){
+      for(const train of group.trains){
+        const id=train.entity_id;
+        const platform=this._validPlatform(train.attributes.platform);
+        if(!platform)continue;
+        const previous=this._platformHistory[id];
+        if(previous&&previous!==platform){
+          this._platformChanges[id]={from:previous,to:platform,at:now};
+        }
+        this._platformHistory[id]=platform;
+      }
+    }
+    for(const [id,change] of Object.entries(this._platformChanges)){
+      if(now-change.at>10*60*1000)delete this._platformChanges[id];
+    }
+  }
+  _formatAge(timestamp,now=Date.now()){
+    const age=Math.max(0,Math.floor((now-timestamp)/1000));
+    if(age<10)return "à l'instant";
+    if(age<60)return `il y a ${age} s`;
+    const minutes=Math.floor(age/60);
+    if(minutes<60)return `il y a ${minutes} min`;
+    const hours=Math.floor(minutes/60);
+    return `il y a ${hours} h ${String(minutes%60).padStart(2,'0')}`;
+  }
   _escape(v){return String(v===undefined||v===null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   _icon(value,fallback){
     const v=String(value||fallback||'');
@@ -145,8 +181,11 @@ class SncfTrainCard extends HTMLElement {
       ?`<span class="original">${this._escape(base)}</span><span class="actual">${this._escape(real)}</span>`
       :`<span class="actual">${this._escape(real)}</span>`;
     const durationLabel=Number.isFinite(duration)&&duration>0?`${Math.round(duration)} min`:'';
-    const platform=String(a.platform||'').trim();
-    const showPlatform=this.config.show_platform&&platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(platform.toUpperCase());
+    const platform=this._validPlatform(a.platform);
+    const showPlatform=this.config.show_platform&&!!platform;
+    const platformChange=this._platformChanges[entity.entity_id];
+    const showPlatformChange=!!platformChange&&Date.now()-platformChange.at<=10*60*1000;
+    const platformChangeNotice=showPlatformChange?`<span class="platform-changed"><ha-icon icon="mdi:swap-horizontal"></ha-icon>Voie modifiée</span>`:'';
     const arrivalPlatform=String(a.arrival_platform||'').trim();
     const showArrivalPlatform=this.config.show_arrival_platform&&arrivalPlatform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(arrivalPlatform.toUpperCase());
     const arrivalInfo=showArrivalPlatform?`<div class="platform-line arrival-platform"><span class="platform-label">Voie</span><strong>${this._escape(arrivalPlatform)}</strong></div>`:'';
@@ -180,7 +219,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="train-meta"><span class="ter-pill">${this._escape(trainLabel)}</span>
           ${trainInfo?`<span class="train-details">${trainInfo}</span>`:''}
           ${this.config.show_duration&&durationLabel?`<span class="duration"><ha-icon icon="mdi:clock-outline"></ha-icon>${durationLabel}</span>`:''}
-          ${countdown}
+          ${countdown}${platformChangeNotice}
         </div>
         ${this.config.show_status?`<span class="status"><span class="dot"></span>${label}</span>`:''}
       </div>
@@ -207,6 +246,8 @@ class SncfTrainCard extends HTMLElement {
       const baseDeparture=String(stop.base_departure_time||'').trim();
       const eventTime=this._date(index===stops.length-1?(arrival||departure):(departure||arrival));
       const passed=Number.isFinite(eventTime)&&now>=eventTime;
+      const nextStopIndex=eventTimes.findIndex(time=>Number.isFinite(time)&&time>now);
+      const isNextStop=index===nextStopIndex;
       const platform=String(stop.platform||'').trim();
       const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE','?'].includes(platform.toUpperCase());
       const actualTimes=[
@@ -218,9 +259,9 @@ class SncfTrainCard extends HTMLElement {
         baseDeparture? `DÉPART ${this._time(baseDeparture)}`:''
       ].filter(Boolean);
       const showBase=Number(entity.attributes.delay_minutes)>0&&baseTimes.length;
-      return `<div class="stop-row ${passed?'passed':''}">
+      return `<div class="stop-row ${passed?'passed':''} ${isNextStop?'next-stop':''}">
         <span class="stop-dot"></span>
-        <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}</span>
+        <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}${isNextStop?'<small class="next-stop-label">PROCHAINE</small>':''}</span>
         <span class="stop-times"><span class="stop-time-list">${actualTimes||'<span class="stop-time"><strong>--:--</strong></span>'}</span>${showBase?`<small>${this._escape(baseTimes.join(' · '))}</small>`:''}</span>
       </div>`;
     }).join('');
@@ -256,6 +297,12 @@ class SncfTrainCard extends HTMLElement {
   }
   _updateLive(groups){
     const now=Date.now();
+    const freshness=this.shadowRoot.querySelector('[data-data-freshness]');
+    if(freshness){
+      const index=Math.max(0,Math.min(this._activeDirection,groups.length-1));
+      const updatedAt=Number(groups[index]?.updatedAt);
+      freshness.textContent=updatedAt>0?`Données actualisées ${this._formatAge(updatedAt,now)}`:'Actualisation indisponible';
+    }
     const nextContainer=this.shadowRoot.querySelector('[data-next-departure]');
     if(nextContainer){
       const index=Math.max(0,Math.min(this._activeDirection,groups.length-1));
@@ -317,7 +364,7 @@ class SncfTrainCard extends HTMLElement {
     const name=this._escape(this._directionName(group,index));
     return `<nav aria-label="Choix du sens">
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div></div>
+       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div><div class="data-freshness" data-data-freshness></div></div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
@@ -394,6 +441,7 @@ class SncfTrainCard extends HTMLElement {
     try{
       const groups=await this._entities();
       if(id!==this._renderId||!this.isConnected)return;
+      this._trackPlatformChanges(groups);
       const signature=JSON.stringify(groups.map(g=>[g.deviceId,g.trains.map(t=>[
         t.entity_id,t.attributes.departure_time,t.attributes.arrival_time,
         t.attributes.base_departure_time,t.attributes.base_arrival_time,
@@ -440,6 +488,9 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--accent);font-size:.72rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
+.data-freshness{margin-top:3px;color:var(--secondary-text-color);font-size:.62rem;font-weight:500;line-height:1.2}
+.platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
+.platform-changed ha-icon{--mdc-icon-size:13px}
  .next-platform{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.75rem;line-height:17px;font-weight:750;white-space:nowrap}
 .direction-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 5px}
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
@@ -457,6 +508,9 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
+.stop-row.next-stop .stop-name{color:var(--accent);font-weight:850}
+.stop-row.next-stop .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.next-stop-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.52rem;font-weight:800;letter-spacing:.02em;vertical-align:middle}
 .stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
 .stop-time-list{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}
  .stop-time{display:flex;align-items:center;gap:5px;min-height:17px}
