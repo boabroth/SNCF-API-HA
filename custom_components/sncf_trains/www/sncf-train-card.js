@@ -575,7 +575,7 @@ nav{position:relative}
 .stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
 .stop-row.next-stop .stop-name{color:var(--primary-text-color);font-weight:500}
-.stop-row.next-stop .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.stop-row.next-stop .stop-dot{background:var(--secondary-text-color);box-shadow:0 0 0 1px var(--secondary-text-color)}
 .next-stop-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.52rem;font-weight:800;letter-spacing:.02em;vertical-align:middle}
 .late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
