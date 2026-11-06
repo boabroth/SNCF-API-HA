@@ -232,11 +232,9 @@ class SncfTrainCard extends HTMLElement {
     const stops=Array.isArray(entity.attributes.stops)?entity.attributes.stops:[];
     if(!stops.length)return '';
     const now=Date.now();
-    const eventTimes=stops.map((stop,index)=>{
-      const value=index===stops.length-1
-        ?(stop.arrival_time||stop.departure_time)
-        :(stop.departure_time||stop.arrival_time);
-      return this._date(value);
+    const eventTimes=stops.map(stop=>{
+      // Une gare est considérée atteinte à l'heure d'arrivée, pas au départ.
+      return this._date(stop.arrival_time||stop.departure_time);
     });
     const validTimes=eventTimes.filter(Number.isFinite);
     const position=this._stopPosition(validTimes,now);
@@ -245,7 +243,7 @@ class SncfTrainCard extends HTMLElement {
       const departure=String(stop.departure_time||'').trim();
       const baseArrival=String(stop.base_arrival_time||'').trim();
       const baseDeparture=String(stop.base_departure_time||'').trim();
-      const eventTime=this._date(index===stops.length-1?(arrival||departure):(departure||arrival));
+      const eventTime=this._date(arrival||departure);
       const passed=Number.isFinite(eventTime)&&now>=eventTime;
       const nextStopIndex=eventTimes.findIndex(time=>Number.isFinite(time)&&time>now);
       const isNextStop=index===nextStopIndex;
