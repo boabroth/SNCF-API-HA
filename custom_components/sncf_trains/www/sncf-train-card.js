@@ -135,7 +135,7 @@ class SncfTrainCard extends HTMLElement {
     const now=Date.now();
     for(const group of groups){
       for(const train of group.trains){
-        const id=train.entity_id;
+        const id=`${train.entity_id}|${train.attributes.train_num||''}|${train.attributes.departure_time||''}`;
         const platform=this._validPlatform(train.attributes.platform);
         if(!platform)continue;
         const previous=this._platformHistory[id];
@@ -324,16 +324,26 @@ class SncfTrainCard extends HTMLElement {
       el.hidden=now>=dep;
     });
     this.shadowRoot.querySelectorAll('.stop-timeline').forEach(timeline=>{
-      const times=String(timeline.dataset.times||'').split(',').map(Number).filter(Number.isFinite);
+      const rawTimes=String(timeline.dataset.times||'').split(',').map(Number);
+      const times=rawTimes.filter(Number.isFinite);
       const position=this._stopPosition(times,now);
       const fill=timeline.querySelector('.stop-rail-fill');
       const marker=timeline.querySelector('.stop-train-marker');
       if(fill)fill.style.height=`${position*36}px`;
       if(marker)marker.style.top=`${17+position*36}px`;
       const now=Date.now();
+      const nextIndex=rawTimes.findIndex(time=>Number.isFinite(time)&&time>now);
       timeline.querySelectorAll('.stop-row').forEach((row,index)=>{
-        const eventTime=times[index];
+        const eventTime=rawTimes[index];
+        const isNext=index===nextIndex;
         row.classList.toggle('passed',Number.isFinite(eventTime)&&now>=eventTime);
+        row.classList.toggle('next-stop',isNext);
+        const name=row.querySelector('.stop-name');
+        if(name){
+          const label=name.querySelector('.next-stop-label');
+          if(isNext&&!label)name.insertAdjacentHTML('beforeend','<small class="next-stop-label">PROCHAINE</small>');
+          if(!isNext&&label)label.remove();
+        }
       });
     });
   }
