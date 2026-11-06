@@ -413,7 +413,7 @@ nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;bo
 .stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
 .stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
 .stop-time strong{font-size:.69rem;font-weight:700}
-.stop-times>small{font-size:.62rem;color:var(--primary-text-color);opacity:.78;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500}
+.stop-times>small{font-size:.62rem;color:var(--primary-text-color);opacity:.9;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500}
 .stop-train-marker{position:absolute;left:14px;transform:translateY(-50%);width:28px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:20px;color:inherit}
 .stop-train-marker .emoji{font-size:18px;line-height:1;color:inherit}
