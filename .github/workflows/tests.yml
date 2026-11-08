@@ -30,4 +30,4 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Lancement des tests
-        run: pytest -q
+        run: node --check custom_components/sncf_trains/www/sncf-train-card.js && pytest -q
