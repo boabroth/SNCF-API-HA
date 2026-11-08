@@ -423,21 +423,31 @@ class SncfTrainCard extends HTMLElement {
         button.classList.remove('refreshing');
       }
     });
-    const nav=panel.querySelector('nav[aria-label="Choix du sens"]');
-    let swipeStart=null;
-    nav?.addEventListener('touchstart',event=>{
-      if(event.target.closest('button')){swipeStart=null;return;}
-      const touch=event.changedTouches[0];swipeStart={x:touch.clientX,y:touch.clientY};
-    },{passive:true});
-    nav?.addEventListener('touchend',event=>{
-      if(!swipeStart||groups.length<2)return;
-      const touch=event.changedTouches[0];
-      const dx=touch.clientX-swipeStart.x,dy=touch.clientY-swipeStart.y;
-      swipeStart=null;
-      if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.25)return;
-      this._activeDirection=(this._activeDirection+(dx<0?1:groups.length-1))%groups.length;
-      this._updatePanel(groups);
-    },{passive:true});
+    // Le balayage est détecté sur toute la carte, pas uniquement sur le sélecteur de direction.
+    // Les gestionnaires sont installés une seule fois : _updatePanel() reconstruit le panel.
+    this._latestGroups=groups;
+    const card=this.shadowRoot.querySelector('ha-card');
+    if(card&&!this._cardSwipeBound){
+      let swipeStart=null;
+      card.addEventListener('touchstart',event=>{
+        if(event.touches.length!==1){swipeStart=null;return;}
+        const touch=event.touches[0];
+        swipeStart={x:touch.clientX,y:touch.clientY};
+      },{passive:true});
+      card.addEventListener('touchend',event=>{
+        if(!swipeStart)return;
+        const touch=event.changedTouches[0];
+        const dx=touch.clientX-swipeStart.x,dy=touch.clientY-swipeStart.y;
+        swipeStart=null;
+        const currentGroups=this._latestGroups||[];
+        if(currentGroups.length<2||Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.25)return;
+        event.preventDefault();
+        this._activeDirection=(this._activeDirection+(dx<0?1:currentGroups.length-1))%currentGroups.length;
+        this._updatePanel(currentGroups);
+      },{passive:false});
+      card.addEventListener('touchcancel',()=>{swipeStart=null;},{passive:true});
+      this._cardSwipeBound=true;
+    }
     const cancellationInfo=panel.querySelector('.cancellation-info');
     cancellationInfo?.addEventListener('click',event=>{
       event.stopPropagation();
