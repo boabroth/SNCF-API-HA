@@ -25,11 +25,11 @@ class SncfTrainCard extends HTMLElement {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
     const ids=(Array.isArray(config.device_id)?config.device_id:[config.device_id]).filter(Boolean);
     this.config={
-      title:'Trains SNCF',train_lines:100,visible_trains:3,scroll_trains:undefined,direction_titles:'',animation_duration:30,update_interval:30,
+      title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
       show_track:true,show_duration:true,show_status:true,show_countdown:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
-      ...config,device_id:ids,show_track:true
+      ...config,device_id:ids,show_track:true,show_scroll:!!config.show_scroll,show_next_train:config.show_next_train!==false
     };
     // Compatibilité : anciennes configurations exprimées en millisecondes.
     // Les anciennes valeurs étaient au minimum de 5000 ms.
@@ -44,28 +44,28 @@ class SncfTrainCard extends HTMLElement {
     this.render();
   }
   static getConfigForm() {
-    const bool=n=>({name:n,default:true,selector:{boolean:{}}});
+    const bool=(n,defaultValue=true)=>({name:n,default:defaultValue,selector:{boolean:{}}});
     return {
       schema:[
         {name:'device_id',required:true,selector:{device:{multiple:true,filter:{integration:'sncf_trains'}}}},
         {name:'title',selector:{text:{}}},
         {name:'visible_trains',selector:{number:{min:1,max:10,step:1}}},
-        {name:'scroll_trains',selector:{number:{min:1,max:100,step:1}}},
+        
         {name:'direction_titles',selector:{text:{}}},
         {name:'train_lines',selector:{number:{min:1,max:100,step:1}}},
         {name:'animation_duration',selector:{number:{min:0,max:100,step:1}}},
         {name:'update_interval',selector:{number:{min:5,max:3600,step:1}}},
-        bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),
+        bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),bool('show_scroll',false),bool('show_next_train',true),
         bool('show_platform'),bool('show_arrival_platform'),bool('show_train_units'),bool('show_train_type'),
         {name:'train_emoji',selector:{icon:{}}},
         bool('train_emoji_axial_symmetry')
       ],
       computeLabel:s=>({
-        device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',scroll_trains:'Trains affichés avant scroll',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
+        device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
         animation_duration:'Afficher le train avant départ (minutes)',
         update_interval:'Actualisation (secondes)',
         show_countdown:'Compte à rebours avant le départ',show_track:'Afficher le rail',show_duration:'Afficher la durée',
-        show_status:'Afficher le statut',show_platform:'Afficher la voie de départ',show_arrival_platform:'Afficher la voie d’arrivée',
+        show_status:'Afficher le statut',show_scroll:'Afficher une scroll',show_next_train:'Afficher le prochain train',show_platform:'Afficher la voie de départ',show_arrival_platform:'Afficher la voie d’arrivée',
         show_train_units:'Afficher le nombre de rames',show_train_type:'Afficher le matériel roulant',
         train_emoji:'Icône du train',
         train_emoji_axial_symmetry:'Inverser horizontalement le train'
@@ -365,6 +365,7 @@ class SncfTrainCard extends HTMLElement {
     if(!groups.length)return '<p class="empty">Aucun trajet configuré.</p>';
     const index=Math.max(0,Math.min(this._activeDirection,groups.length-1));
     const group=groups[index],count=group.trains.length;
+    this._currentDeviceId=group.deviceId;
     const visible=Math.max(1,Number(this.config.visible_trains)||3);
     const expanded=!!this._expanded[group.deviceId];
     const shown=expanded?group.trains:group.trains.slice(0,visible);
@@ -373,30 +374,20 @@ class SncfTrainCard extends HTMLElement {
     const name=this._escape(this._directionName(group,index));
     return `<nav aria-label="Choix du sens">
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small><div class="next-departure" data-next-departure></div><div class="data-freshness" data-data-freshness></div></div>
+       <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small>${this.config.show_next_train?'<div class="next-departure" data-next-departure></div>':''}</div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
        <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" aria-expanded="false" data-tooltip="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
      </nav>
      <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
      <div class="trains">${shown.length?shown.map(t=>this._line(t,t.entity_id===nextTrainId)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
      ${count>visible?`<button type="button" class="more" data-more aria-expanded="${expanded}">${expanded?'Voir moins':`Voir plus (${count-visible} trains)`} <ha-icon icon="mdi:chevron-${expanded?'up':'down'}"></ha-icon></button>`:''}
+     <div class="data-freshness" data-data-freshness></div>
 `;
   }
   _applyTrainScroll(){
     const container=this.shadowRoot.querySelector('.trains');
     if(!container)return;
-    const limit=Number(this.config.scroll_trains);
-    const rows=container.querySelectorAll('.train-row');
-    container.classList.remove('scrollable');
-    container.style.maxHeight='';
-    if(!Number.isInteger(limit)||limit<1||rows.length<=limit)return;
-    const containerTop=container.getBoundingClientRect().top;
-    const lastVisible=rows[limit-1];
-    const maxHeight=lastVisible.getBoundingClientRect().bottom-containerTop;
-    if(maxHeight>0){
-      container.style.maxHeight=`${maxHeight}px`;
-      container.classList.add('scrollable');
-    }
+    container.classList.toggle('scrollable',!!this.config.show_scroll&&!!this._expanded[this._currentDeviceId]);
   }
   _attachActions(groups){
     const panel=this.shadowRoot.querySelector('.panel');
@@ -426,6 +417,21 @@ class SncfTrainCard extends HTMLElement {
         button.classList.remove('refreshing');
       }
     });
+    const nav=panel.querySelector('nav[aria-label="Choix du sens"]');
+    let swipeStart=null;
+    nav?.addEventListener('touchstart',event=>{
+      if(event.target.closest('button')){swipeStart=null;return;}
+      const touch=event.changedTouches[0];swipeStart={x:touch.clientX,y:touch.clientY};
+    },{passive:true});
+    nav?.addEventListener('touchend',event=>{
+      if(!swipeStart||groups.length<2)return;
+      const touch=event.changedTouches[0];
+      const dx=touch.clientX-swipeStart.x,dy=touch.clientY-swipeStart.y;
+      swipeStart=null;
+      if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.25)return;
+      this._activeDirection=(this._activeDirection+(dx<0?1:groups.length-1))%groups.length;
+      this._updatePanel(groups);
+    },{passive:true});
     const cancellationInfo=panel.querySelector('.cancellation-info');
     cancellationInfo?.addEventListener('click',event=>{
       event.stopPropagation();
@@ -479,6 +485,8 @@ class SncfTrainCard extends HTMLElement {
     const panel=this.shadowRoot.querySelector('.panel');
     if(!panel)return;
     panel.innerHTML=this._view(groups);
+    const loading=this.shadowRoot.querySelector('.loading-state');
+    if(loading)loading.hidden=true;
     this._applyTrainScroll();
     this._attachActions(groups);
     this._updateLive(groups);
@@ -504,6 +512,7 @@ class SncfTrainCard extends HTMLElement {
       if(!this._painted){
         this.shadowRoot.innerHTML=`<style>${this._css()}</style><ha-card>
           <header class="card-header" data-collapse-toggle role="button" tabindex="0" aria-expanded="true"><span class="title-icon"><ha-icon icon="mdi:train"></ha-icon></span><span class="card-title">${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button><ha-icon class="collapse-chevron" icon="mdi:chevron-up"></ha-icon></header>
+          <div class="loading-state"><ha-icon class="loading-spinner" icon="mdi:loading"></ha-icon><span>En cours de chargement</span></div>
           <div class="panel"></div></ha-card>`;
         this._painted=true;
       }
@@ -542,10 +551,11 @@ ha-card:not(.collapsed) .card-header{margin:0 6px}
 .refresh-btn.refreshing ha-icon{animation:sncf-refresh-spin .8s linear infinite}
 @keyframes sncf-refresh-spin{to{transform:rotate(360deg)}}
 .panel,.trains{overflow-anchor:none;min-width:0;max-width:100%}
+.loading-state{display:flex;align-items:center;justify-content:center;gap:8px;padding:18px 12px;color:var(--secondary-text-color);font-size:.78rem}.loading-state[hidden]{display:none}.loading-spinner{--mdc-icon-size:19px;animation:sncf-refresh-spin .9s linear infinite;color:var(--primary-color)}
 nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--secondary-background-color,rgba(100,120,160,.09));border:1px solid var(--divider-color)}
-nav{position:relative}
+nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .cancellation-info{position:absolute;top:5px;right:7px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--secondary-text-color);cursor:pointer;z-index:3}
-.cancellation-info ha-icon{--mdc-icon-size:18px}
+.cancellation-info ha-icon{--mdc-icon-size:15px}
 .cancellation-info::after{content:attr(data-tooltip);position:absolute;top:32px;right:0;width:max-content;max-width:min(230px,70vw);padding:9px 11px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);color:var(--primary-text-color);font-size:.72rem;font-weight:500;line-height:1.35;text-align:left;white-space:normal;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s ease,transform .15s ease;pointer-events:none}
 .cancellation-info:hover::after,.cancellation-info:focus-visible::after,nav.show-cancellation-tooltip .cancellation-info::after{opacity:1;visibility:visible;transform:translateY(0)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
@@ -555,7 +565,7 @@ nav{position:relative}
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--accent);font-size:.72rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
-.data-freshness{margin-top:3px;color:var(--secondary-text-color);font-size:.62rem;font-weight:500;line-height:1.2;text-align:right}
+.data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
 .platform-changed ha-icon{--mdc-icon-size:13px}
  .next-platform{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.75rem;line-height:17px;font-weight:750;white-space:nowrap}
@@ -563,7 +573,7 @@ nav{position:relative}
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
 .direction-dots span.active{width:19px;background:var(--accent)}
 .trains{padding:2px 12px 0}
-.trains.scrollable{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
+.trains.scrollable{max-height:min(65vh,640px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
 .train-row.next-train{border-color:var(--accent)}
 .stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:0;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),margin-top .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
