@@ -1,9 +1,16 @@
 /* SNCF Train Card — modernisation graphique, compatible avec SNCF-API-HA.
  * Carte autonome, sans dépendance, utilisant les capteurs et device_id existants.
  */
-globalThis.customCards ||= [];
-if (!globalThis.customCards.some(c => c.type === 'sncf-train-card')) {
-  globalThis.customCards.push({type:'sncf-train-card',name:'SNCF Train Card',description:'Horaires SNCF avec rails modernisés',preview:true,configurable:true});
+// Enregistrement dans le sélecteur de cartes Lovelace.
+if (!Array.isArray(globalThis.customCards)) globalThis.customCards = [];
+if (!globalThis.customCards.some(c => c.type === 'custom:sncf-train-card')) {
+  globalThis.customCards.push({
+    type: 'custom:sncf-train-card',
+    name: 'SNCF Train Card',
+    description: 'Horaires SNCF avec rails modernisés',
+    preview: true,
+    configurable: true
+  });
 }
 class SncfTrainCard extends HTMLElement {
   constructor() {
