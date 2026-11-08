@@ -330,7 +330,6 @@ class SncfTrainCard extends HTMLElement {
       const marker=timeline.querySelector('.stop-train-marker');
       if(fill)fill.style.height=`${position*36}px`;
       if(marker)marker.style.top=`${17+position*36}px`;
-      const now=Date.now();
       const nextIndex=rawTimes.findIndex(time=>Number.isFinite(time)&&time>now);
       timeline.querySelectorAll('.stop-row').forEach((row,index)=>{
         const eventTime=rawTimes[index];
