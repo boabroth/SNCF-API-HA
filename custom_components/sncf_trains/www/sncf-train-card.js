@@ -29,7 +29,7 @@ class SncfTrainCard extends HTMLElement {
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
       show_track:true,show_duration:true,show_status:true,show_countdown:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
-      ...config,device_id:ids
+      ...config,device_id:ids,show_track:true
     };
     // Compatibilité : anciennes configurations exprimées en millisecondes.
     // Les anciennes valeurs étaient au minimum de 5000 ms.
