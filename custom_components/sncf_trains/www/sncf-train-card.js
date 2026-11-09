@@ -430,10 +430,18 @@ class SncfTrainCard extends HTMLElement {
         swipeStart=null;
         const currentGroups=this._latestGroups||[];
         if(currentGroups.length<2||Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.25)return;
-        event.preventDefault();
+        // Ne pas annuler touchend : certains WebView Android cessent ensuite
+        // de générer correctement les clics sur l'en-tête.
+        this._suppressSwipeClick=true;
         this._activeDirection=(this._activeDirection+(dx<0?1:currentGroups.length-1))%currentGroups.length;
         this._updatePanel(currentGroups);
-      },{passive:false});
+      },{passive:true});
+      card.addEventListener('click',event=>{
+        if(!this._suppressSwipeClick)return;
+        this._suppressSwipeClick=false;
+        event.preventDefault();
+        event.stopPropagation();
+      },true);
       card.addEventListener('touchcancel',()=>{swipeStart=null;},{passive:true});
       this._cardSwipeBound=true;
     }
@@ -583,9 +591,9 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .cancellation-info:hover::after,.cancellation-info:focus-visible::after,.direction-dots.show-cancellation-tooltip .cancellation-info::after{opacity:1;visibility:visible;transform:translateY(0)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
-.direction-label span{display:block;font-size:.92rem;font-weight:750;overflow-wrap:anywhere}
+.direction-label span{display:block;font-size:1.04rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
-.next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:.72rem;font-weight:750}
+.next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:.82rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
@@ -640,7 +648,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .station.arrive{text-align:right}
 .station-caption{font-size:.59rem;text-transform:uppercase;letter-spacing:.08em;color:var(--secondary-text-color);font-weight:650}
 .times{display:flex;flex-direction:column;align-items:stretch;gap:2px;line-height:1.15;font-variant-numeric:tabular-nums;width:100%}
-.actual{display:block;width:100%;text-align:inherit;font-size:clamp(.94rem,4.5vw,1.27rem);font-weight:800;letter-spacing:-.035em;white-space:nowrap}
+.actual{display:block;width:100%;text-align:inherit;font-size:clamp(1.08rem,5vw,1.48rem);font-weight:800;letter-spacing:-.035em;white-space:nowrap}
 .original{display:block;width:100%;text-align:inherit;font-size:.72rem;color:var(--secondary-text-color);text-decoration:line-through}
 .middle{min-width:16px;display:flex;align-items:center;justify-content:center;position:relative}
 .track{height:4px;width:100%;position:relative;border-radius:9px;background:var(--divider-color)}
@@ -667,7 +675,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .late.moderate .moving-train{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .moving-train{color:var(--error-color,#e53935)}
 .running .status{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.arrived .status{color:var(--secondary-text-color);background:var(--secondary-background-color)}
+.arrived .status{color:var(--secondary-text-color);background:var(--secondary-background-color);border:1px solid var(--secondary-text-color)}
 .cancellation-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.69rem;line-height:1.4;text-align:center}.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--divider-color);border-radius:12px;background:var(--secondary-background-color,rgba(100,120,160,.09));color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .more ha-icon{--mdc-icon-size:19px}
