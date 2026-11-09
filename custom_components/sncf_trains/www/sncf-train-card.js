@@ -196,7 +196,7 @@ class SncfTrainCard extends HTMLElement {
     const platformChangeNotice=showPlatformChange?`<span class="platform-changed"><ha-icon icon="mdi:swap-horizontal"></ha-icon>Voie modifiée</span>`:'';
     const arrivalPlatform=String(a.arrival_platform||'').trim();
     const showArrivalPlatform=this.config.show_arrival_platform&&arrivalPlatform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(arrivalPlatform.toUpperCase());
-    const arrivalInfo=showArrivalPlatform?`<div class="platform-line arrival-platform"><span class="platform-label">Voie</span><strong>${this._escape(arrivalPlatform)}</strong></div>`:'';
+    const arrivalInfo=platformSlot?`<div class="platform-slot arrival-slot">${showArrivalPlatform?`<div class="platform-line arrival-platform"><span class="platform-label">Voie</span><strong>${this._escape(arrivalPlatform)}</strong></div>`:''}</div>`:'';
     const units=Number(a.train_units);
     const showUnits=this.config.show_train_units&&Number.isInteger(units)&&units>0;
     const trainType=String(a.train_type||'').trim();
@@ -204,7 +204,9 @@ class SncfTrainCard extends HTMLElement {
     const trainNumber=String(a.train_num||'').trim();
     const trainLabel=trainNumber? `TER ${trainNumber}` : 'TER';
     const expanded=!!this._expanded[entity.entity_id];
-    const departureInfo=showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:'';
+    // Réserver la même hauteur sous les deux horaires dès qu'une voie est affichée.
+    const platformSlot=showPlatform||showArrivalPlatform;
+    const departureInfo=platformSlot?`<div class="platform-slot">${showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:''}</div>`:'';
     const trainInfo=[
       showUnits?`<span class="train-detail"><ha-icon icon="mdi:train-variant"></ha-icon>${units} ${units===1?'rame':'rames'}</span>`:'',
       showType?`<span class="train-detail train-type">${this._escape(trainType)}</span>`:''
@@ -547,7 +549,7 @@ class SncfTrainCard extends HTMLElement {
 *{box-sizing:border-box}
 ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-background,var(--card-background-color));color:var(--primary-text-color);border-radius:28px;overflow:hidden;border:0;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .train-details{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:.72rem;color:var(--secondary-text-color);min-width:0}
- .platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:7px;white-space:nowrap}\n.platform-badge{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.76rem;line-height:17px;font-weight:750;white-space:nowrap}\n.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
+ .platform-slot{display:flex;align-items:center;min-height:24px;margin-top:7px}\n.platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:0;white-space:nowrap}\n.arrival-slot{justify-content:flex-end}\n.platform-badge{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.76rem;line-height:17px;font-weight:750;white-space:nowrap}\n.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .train-detail ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .platform-inline{font-weight:650;color:var(--primary-text-color)}
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
@@ -580,7 +582,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
 .direction-label span{display:block;font-size:.92rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
-.next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--accent);font-size:.72rem;font-weight:750}
+.next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:.72rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
