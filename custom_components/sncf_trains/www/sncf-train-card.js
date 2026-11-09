@@ -258,7 +258,7 @@ class SncfTrainCard extends HTMLElement {
       const isNextStop=index===nextStopIndex;
       const platform=String(stop.platform||'').trim();
       const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE','?'].includes(platform.toUpperCase());
-      const actualTimes=`<span class="stop-time"><small>Arr.</small><strong>${arrival?this._time(arrival):'--:--'}</strong></span><span class="stop-time departure-time"><small>Départ</small><strong>${departure?this._time(departure):'--:--'}</strong><span class="stop-platform-slot">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`;
+      const actualTimes=`<span class="stop-time">${arrival?`<small>Arr.</small><strong>${this._time(arrival)}</strong>`:''}</span><span class="stop-time departure-time">${departure?`<small>Départ</small><strong>${this._time(departure)}</strong>`:''}<span class="stop-platform-slot">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`;
       const showBase=Number(entity.attributes.delay_minutes)>0&&(baseArrival||baseDeparture);
       const baseTimes=`<span class="stop-base-time">${baseArrival?`ARR. ${this._time(baseArrival)}`:''}</span><span class="stop-base-time">${baseDeparture?`DÉPART ${this._time(baseDeparture)}`:''}</span>`;
       return `<div class="stop-row ${passed?'passed':''} ${isNextStop?'next-stop':''}">
