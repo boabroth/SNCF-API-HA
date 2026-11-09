@@ -258,19 +258,13 @@ class SncfTrainCard extends HTMLElement {
       const isNextStop=index===nextStopIndex;
       const platform=String(stop.platform||'').trim();
       const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE','?'].includes(platform.toUpperCase());
-      const actualTimes=[
-        arrival? `<span class="stop-time"><small>Arr.</small><strong>${this._time(arrival)}</strong></span>`:'',
-        departure? `<span class="stop-time departure-time"><small>Départ</small><strong>${this._time(departure)}</strong><span class="stop-platform-slot">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`:''
-      ].filter(Boolean).join('');
-      const baseTimes=[
-        baseArrival? `ARR. ${this._time(baseArrival)}`:'',
-        baseDeparture? `DÉPART ${this._time(baseDeparture)}`:''
-      ].filter(Boolean);
-      const showBase=Number(entity.attributes.delay_minutes)>0&&baseTimes.length;
+      const actualTimes=`<span class="stop-time"><small>Arr.</small><strong>${arrival?this._time(arrival):'--:--'}</strong></span><span class="stop-time departure-time"><small>Départ</small><strong>${departure?this._time(departure):'--:--'}</strong><span class="stop-platform-slot">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`;
+      const showBase=Number(entity.attributes.delay_minutes)>0&&(baseArrival||baseDeparture);
+      const baseTimes=`<span class="stop-base-time">${baseArrival?`ARR. ${this._time(baseArrival)}`:''}</span><span class="stop-base-time">${baseDeparture?`DÉPART ${this._time(baseDeparture)}`:''}</span>`;
       return `<div class="stop-row ${passed?'passed':''} ${isNextStop?'next-stop':''}">
         <span class="stop-dot"></span>
         <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}${isNextStop?'<small class="next-stop-label">PROCHAINE</small>':''}</span>
-        <span class="stop-times"><span class="stop-time-list">${actualTimes||'<span class="stop-time"><strong>--:--</strong></span>'}</span>${showBase?`<small>${this._escape(baseTimes.join(' · '))}</small>`:''}</span>
+        <span class="stop-times"><span class="stop-time-list">${actualTimes}</span>${showBase?`<span class="stop-base-time-list">${baseTimes}</span>`:''}</span>
       </div>`;
     }).join('');
     const height=Math.max(36,(stops.length-1)*36);
@@ -610,13 +604,13 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .next-stop-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.52rem;font-weight:800;letter-spacing:.02em;vertical-align:middle}
 .late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
-.stop-times{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums}
-.stop-time-list{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:nowrap}
- .stop-time{display:flex;align-items:center;gap:5px;min-height:17px}
+.stop-times{display:flex;flex-direction:column;align-items:stretch;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:190px}
+.stop-time-list,.stop-base-time-list{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:12px;align-items:center}
+ .stop-time{display:flex;align-items:center;gap:5px;min-height:17px;min-width:0}
  .departure-time{gap:5px}.stop-platform-slot{display:inline-flex;align-items:center;justify-content:flex-start;flex:0 0 34px;width:34px;height:17px}.stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;min-width:22px;height:17px;box-sizing:border-box;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.74rem;font-weight:750;line-height:17px;white-space:nowrap}.stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
 .stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
 .stop-time strong{font-size:.69rem;font-weight:700}
-.stop-times>small{font-size:.62rem;color:var(--primary-text-color);opacity:.9;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500}
+.stop-base-time{display:block;min-width:0;font-size:.62rem;color:var(--primary-text-color);opacity:.9;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500;text-align:left}
 .stop-train-marker{position:absolute;left:17px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:16px;color:inherit}
 .stop-train-marker .emoji{font-size:15px;line-height:1;color:inherit}
