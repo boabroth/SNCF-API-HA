@@ -32,7 +32,7 @@ class SncfTrainCard extends HTMLElement {
     if (!config.device_id || (Array.isArray(config.device_id) && !config.device_id.length)) throw Error('device_id obligatoire');
     const ids=(Array.isArray(config.device_id)?config.device_id:[config.device_id]).filter(Boolean);
     this.config={
-      title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,
+      title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,arrival_retention:30,
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
       show_track:true,show_duration:true,show_status:true,show_countdown:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
@@ -62,6 +62,7 @@ class SncfTrainCard extends HTMLElement {
         {name:'train_lines',selector:{number:{min:1,max:100,step:1}}},
         {name:'animation_duration',selector:{number:{min:0,max:100,step:1}}},
         {name:'update_interval',selector:{number:{min:5,max:3600,step:1}}},
+        {name:'arrival_retention',selector:{number:{min:0,max:180,step:1}}},
         bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),bool('show_scroll',false),bool('show_next_train',true),
         bool('show_platform'),bool('show_arrival_platform'),bool('show_train_units'),bool('show_train_type'),
         {name:'train_emoji',selector:{icon:{}}},
@@ -70,7 +71,7 @@ class SncfTrainCard extends HTMLElement {
       computeLabel:s=>({
         device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
         animation_duration:'Afficher le train avant départ (minutes)',
-        update_interval:'Actualisation (secondes)',
+        update_interval:'Actualisation (secondes)',arrival_retention:'Conserver les trains après leur arrivée (minutes)',
         show_countdown:'Compte à rebours avant le départ',show_track:'Afficher le rail',show_duration:'Afficher la durée',
         show_status:'Afficher le statut',show_scroll:'Afficher une scroll',show_next_train:'Afficher le prochain train',show_platform:'Afficher la voie de départ',show_arrival_platform:'Afficher la voie d’arrivée',
         show_train_units:'Afficher le nombre de rames',show_train_type:'Afficher le matériel roulant',
@@ -125,7 +126,7 @@ class SncfTrainCard extends HTMLElement {
         .filter(e=>e.entity_id.startsWith('sensor.')&&e.entity_id.includes('train'))
         .map(e=>this._hass.states[e.entity_id])
         .filter(e=>e?.attributes?.departure_time&&e.attributes.arrival_time)
-        .filter(e=>{const t=this._date(e.attributes.arrival_time);return Number.isFinite(t)&&t+30*60000>=now;})
+        .filter(e=>{const t=this._date(e.attributes.arrival_time);const retention=Math.max(0,Number(this.config.arrival_retention??30));return Number.isFinite(t)&&t+retention*60000>=now;})
         .sort((a,b)=>this._date(a.attributes.departure_time)-this._date(b.attributes.departure_time))
         .slice(0,limit);
       return {deviceId,deviceName,trains,updatedAt};
