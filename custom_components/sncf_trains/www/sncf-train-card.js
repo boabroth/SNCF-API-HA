@@ -675,7 +675,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .late.moderate .moving-train{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .moving-train{color:var(--error-color,#e53935)}
 .running .status{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.arrived .status{color:var(--secondary-text-color);background:color-mix(in srgb,var(--secondary-text-color) 12%,transparent);border:1px solid var(--secondary-text-color)}
+.arrived .status{color:var(--secondary-text-color);background:color-mix(in srgb,var(--secondary-text-color) 12%,transparent)}
 .cancellation-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.69rem;line-height:1.4;text-align:center}.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--divider-color);border-radius:12px;background:var(--secondary-background-color,rgba(100,120,160,.09));color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .more ha-icon{--mdc-icon-size:19px}
