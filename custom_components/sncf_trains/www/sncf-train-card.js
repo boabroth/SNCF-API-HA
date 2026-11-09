@@ -432,13 +432,13 @@ class SncfTrainCard extends HTMLElement {
         if(currentGroups.length<2||Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.25)return;
         // Ne pas annuler touchend : certains WebView Android cessent ensuite
         // de générer correctement les clics sur l'en-tête.
-        this._suppressSwipeClick=true;
+        this._suppressSwipeClickUntil=Date.now()+500;
         this._activeDirection=(this._activeDirection+(dx<0?1:currentGroups.length-1))%currentGroups.length;
         this._updatePanel(currentGroups);
       },{passive:true});
       card.addEventListener('click',event=>{
-        if(!this._suppressSwipeClick)return;
-        this._suppressSwipeClick=false;
+        if(!this._suppressSwipeClickUntil||Date.now()>this._suppressSwipeClickUntil)return;
+        this._suppressSwipeClickUntil=0;
         event.preventDefault();
         event.stopPropagation();
       },true);
