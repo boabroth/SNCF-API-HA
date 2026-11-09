@@ -196,6 +196,8 @@ class SncfTrainCard extends HTMLElement {
     const platformChangeNotice=showPlatformChange?`<span class="platform-changed"><ha-icon icon="mdi:swap-horizontal"></ha-icon>Voie modifiée</span>`:'';
     const arrivalPlatform=String(a.arrival_platform||'').trim();
     const showArrivalPlatform=this.config.show_arrival_platform&&arrivalPlatform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(arrivalPlatform.toUpperCase());
+    // Réserver la même hauteur sous les deux horaires dès qu'une voie est affichée.
+    const platformSlot=showPlatform||showArrivalPlatform;
     const arrivalInfo=platformSlot?`<div class="platform-slot arrival-slot">${showArrivalPlatform?`<div class="platform-line arrival-platform"><span class="platform-label">Voie</span><strong>${this._escape(arrivalPlatform)}</strong></div>`:''}</div>`:'';
     const units=Number(a.train_units);
     const showUnits=this.config.show_train_units&&Number.isInteger(units)&&units>0;
@@ -204,8 +206,6 @@ class SncfTrainCard extends HTMLElement {
     const trainNumber=String(a.train_num||'').trim();
     const trainLabel=trainNumber? `TER ${trainNumber}` : 'TER';
     const expanded=!!this._expanded[entity.entity_id];
-    // Réserver la même hauteur sous les deux horaires dès qu'une voie est affichée.
-    const platformSlot=showPlatform||showArrivalPlatform;
     const departureInfo=platformSlot?`<div class="platform-slot">${showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:''}</div>`:'';
     const trainInfo=[
       showUnits?`<span class="train-detail"><ha-icon icon="mdi:train-variant"></ha-icon>${units} ${units===1?'rame':'rames'}</span>`:'',
