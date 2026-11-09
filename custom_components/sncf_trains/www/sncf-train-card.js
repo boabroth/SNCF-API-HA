@@ -381,9 +381,10 @@ class SncfTrainCard extends HTMLElement {
        <button type="button" class="arrow-btn" data-prev aria-label="Sens précédent"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
        <div class="direction-label"><span>${name}</span><small>${index+1} / ${groups.length} · ${count} trains</small>${this.config.show_next_train?'<div class="next-departure" data-next-departure></div>':''}</div>
        <button type="button" class="arrow-btn" data-next aria-label="Sens suivant"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
-       <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" aria-expanded="false" data-tooltip="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
      </nav>
-     <div class="direction-dots" aria-hidden="true">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}</div>
+     <div class="direction-dots">${groups.map((g,i)=>`<span class="${i===index?'active':''}"></span>`).join('')}
+       <button type="button" class="cancellation-info" aria-label="Information sur les trains supprimés" aria-expanded="false" data-tooltip="Les trains supprimés ne sont pas pris en compte."><ha-icon icon="mdi:alert-circle-outline"></ha-icon></button>
+     </div>
      <div class="trains">${shown.length?shown.map(t=>this._line(t,t.entity_id===nextTrainId)).join(''):'<p class="empty">Aucun train disponible pour ce sens.</p>'}</div>
      ${count>visible?`<button type="button" class="more" data-more aria-expanded="${expanded}">${expanded?'Voir moins':`Voir plus (${count-visible} trains)`} <ha-icon icon="mdi:chevron-${expanded?'up':'down'}"></ha-icon></button>`:''}
      <div class="data-freshness" data-data-freshness></div>
@@ -396,17 +397,6 @@ class SncfTrainCard extends HTMLElement {
   }
   _attachActions(groups){
     const panel=this.shadowRoot.querySelector('.panel');
-    const cardHeader=this.shadowRoot.querySelector('[data-collapse-toggle]');
-    const toggleCard=()=>{
-      this._collapsed=!this._collapsed;
-      const card=this.shadowRoot.querySelector('ha-card');
-      card?.classList.toggle('collapsed',this._collapsed);
-      cardHeader?.setAttribute('aria-expanded',String(!this._collapsed));
-      const chevron=cardHeader?.querySelector('.collapse-chevron');
-      // Le chevron reste orienté vers le haut et pivote de 180° à la fermeture.
-    };
-    cardHeader?.addEventListener('click',event=>{if(!event.target.closest('button'))toggleCard();});
-    cardHeader?.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target===cardHeader){event.preventDefault();toggleCard();}});
     this.shadowRoot.querySelector('[data-refresh]')?.addEventListener('click',async event=>{
       event.stopPropagation();
       const button=event.currentTarget;
@@ -513,6 +503,20 @@ class SncfTrainCard extends HTMLElement {
       <div class="loading-state"><ha-icon class="loading-spinner" icon="mdi:loading"></ha-icon><span>En cours de chargement</span></div>
       <div class="panel"></div></ha-card>`;
     this._painted=true;
+    const cardHeader=this.shadowRoot.querySelector('[data-collapse-toggle]');
+    const toggleCard=()=>{
+      this._collapsed=!this._collapsed;
+      const card=this.shadowRoot.querySelector('ha-card');
+      card?.classList.toggle('collapsed',this._collapsed);
+      cardHeader?.setAttribute('aria-expanded',String(!this._collapsed));
+    };
+    cardHeader?.addEventListener('click',event=>{if(!event.target.closest('button'))toggleCard();});
+    cardHeader?.addEventListener('keydown',event=>{
+      if((event.key==='Enter'||event.key===' ')&&event.target===cardHeader){
+        event.preventDefault();
+        toggleCard();
+      }
+    });
   }
   async render(){
     if(!this.config)return;
@@ -588,9 +592,10 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
 .platform-changed ha-icon{--mdc-icon-size:13px}
  .next-platform{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.75rem;line-height:17px;font-weight:750;white-space:nowrap}
-.direction-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 5px}
+.direction-dots{position:relative;display:flex;justify-content:center;gap:6px;padding:10px 0 5px;min-height:25px}
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
 .direction-dots span.active{width:19px;background:var(--accent)}
+.direction-dots .cancellation-info{position:absolute;top:1px;right:10px;width:26px;height:24px}
 .trains{padding:2px 12px 0}
 .trains.scrollable{max-height:min(65vh,640px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
