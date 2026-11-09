@@ -47,6 +47,8 @@ class SncfTrainCard extends HTMLElement {
     this._painted=false;
     this._signature='';
     this._renderId++;
+    // Préparer immédiatement l'en-tête, sans attendre la disponibilité de hass.
+    this._paintShell();
     this._startTimer();
     this.render();
   }
@@ -504,17 +506,19 @@ class SncfTrainCard extends HTMLElement {
     this._attachActions(groups);
     this._updateLive(groups);
   }
+  _paintShell(){
+    if(!this.config||this._painted)return;
+    this.shadowRoot.innerHTML=`<style>${this._css()}</style><ha-card>
+      <header class="card-header" data-collapse-toggle role="button" tabindex="0" aria-expanded="true"><span class="title-icon"><ha-icon icon="mdi:train"></ha-icon></span><span class="card-title">${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button><ha-icon class="collapse-chevron" icon="mdi:chevron-up"></ha-icon></header>
+      <div class="loading-state"><ha-icon class="loading-spinner" icon="mdi:loading"></ha-icon><span>En cours de chargement</span></div>
+      <div class="panel"></div></ha-card>`;
+    this._painted=true;
+  }
   async render(){
-    if(!this.config||!this._hass||!this.isConnected)return;
+    if(!this.config)return;
+    this._paintShell();
+    if(!this._hass||!this.isConnected)return;
     const id=++this._renderId;
-    // Afficher immédiatement l'en-tête et l'état de chargement avant les appels WebSocket.
-    if(!this._painted){
-      this.shadowRoot.innerHTML=`<style>${this._css()}</style><ha-card>
-        <header class="card-header" data-collapse-toggle role="button" tabindex="0" aria-expanded="true"><span class="title-icon"><ha-icon icon="mdi:train"></ha-icon></span><span class="card-title">${this._escape(this.config.title)}</span><button type="button" class="refresh-btn" data-refresh aria-label="Actualiser les données" title="Actualiser les données"><ha-icon icon="mdi:refresh"></ha-icon></button><ha-icon class="collapse-chevron" icon="mdi:chevron-up"></ha-icon></header>
-        <div class="loading-state"><ha-icon class="loading-spinner" icon="mdi:loading"></ha-icon><span>En cours de chargement</span></div>
-        <div class="panel"></div></ha-card>`;
-      this._painted=true;
-    }
     try{
       const groups=await this._entities();
       if(id!==this._renderId||!this.isConnected)return;
