@@ -261,13 +261,20 @@ class SncfTrainCard extends HTMLElement {
       const isNextStop=index===nextStopIndex;
       const platform=String(stop.platform||'').trim();
       const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE','?'].includes(platform.toUpperCase());
-      const actualTimes=`<span class="stop-time">${arrival?`<small>Arr.</small><strong>${this._time(arrival)}</strong>`:''}</span><span class="stop-time departure-time">${departure?`<small>Départ</small><strong>${this._time(departure)}</strong>`:''}<span class="stop-platform-slot">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}</span></span>`;
-      const showBase=Number(entity.attributes.delay_minutes)>0&&(baseArrival||baseDeparture);
-      const baseTimes=`<span class="stop-base-time">${baseArrival?`ARR. ${this._time(baseArrival)}`:''}</span><span class="stop-base-time">${baseDeparture?`DÉPART ${this._time(baseDeparture)}`:''}</span>`;
-      return `<div class="stop-row ${passed?'passed':''} ${isNextStop?'next-stop':''}">
+      const displayDeparture=departure||arrival;
+      const baseDisplayDeparture=baseDeparture||baseArrival;
+      const departureDelay=displayDeparture&&baseDisplayDeparture
+        ?Math.max(0,Math.round((this._date(displayDeparture)-this._date(baseDisplayDeparture))/60000)):0;
+      const delayClass=departureDelay>15?'severe':departureDelay>0?'moderate':'';
+      const stopDuration=arrival&&departure
+        ?Math.max(0,Math.round((this._date(departure)-this._date(arrival))/60000)):0;
+      const dwellLabel=stopDuration>0?`${stopDuration} min d'arrêt`:'';
+      const actualTime=displayDeparture?`<span class="stop-time-bubble">${this._time(displayDeparture)}</span>`:'';
+      const delayLabel=departureDelay>0?`<span class="stop-delay">+${departureDelay} min</span>`:'';
+      return `<div class="stop-row ${passed?'passed':''} ${isNextStop?'next-stop':''} ${delayClass}">
+        <span class="stop-time-column">${actualTime}${delayLabel}</span>
         <span class="stop-dot"></span>
-        <span class="stop-name">${this._escape(stop.name||'Gare inconnue')}${isNextStop?'<small class="next-stop-label">PROCHAINE</small>':''}</span>
-        <span class="stop-times"><span class="stop-time-list">${actualTimes}</span>${showBase?`<span class="stop-base-time-list">${baseTimes}</span>`:''}</span>
+        <span class="stop-info"><span class="stop-name">${this._escape(stop.name||'Gare inconnue')}${isNextStop?'<small class="next-stop-label">PROCHAINE</small>':''}</span><span class="stop-extra">${validPlatform?`<span class="stop-platform-badge">${this._escape(platform)}</span>`:''}${dwellLabel?`<span class="stop-dwell">${dwellLabel}</span>`:''}</span></span>
       </div>`;
     }).join('');
     const height=Math.max(36,(stops.length-1)*36);
@@ -609,26 +616,27 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--secondary-background-color,rgba(100,120,160,.07));cursor:pointer;-webkit-tap-highlight-color:transparent}
 .train-row.next-train{border-color:var(--accent)}
 .stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:0;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),margin-top .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
-.stop-timeline{position:relative;padding:0 8px 0 18px;min-height:36px}
-.stop-rail{position:absolute;left:28px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
-.stop-rail-fill{position:absolute;left:28px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
-.stop-row{position:relative;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;min-height:36px;gap:6px;z-index:1}
+.stop-timeline{position:relative;padding:0 8px;min-height:36px}
+.stop-rail{position:absolute;left:92px;top:17px;bottom:17px;width:2px;background:var(--divider-color)}
+.stop-rail-fill{position:absolute;left:92px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
+.stop-row{position:relative;display:grid;grid-template-columns:68px 20px minmax(0,1fr);align-items:center;min-height:36px;gap:6px;z-index:1}
+.stop-time-column{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-width:0;font-variant-numeric:tabular-nums}
+.stop-time-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:22px;padding:0 7px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--primary-text-color);font-size:.72rem;font-weight:800;line-height:22px;white-space:nowrap}
+.stop-delay{font-size:.62rem;line-height:11px;font-weight:750;color:var(--sncf-warning-color,var(--warning-color,#f59e0b));padding-left:5px;white-space:nowrap}
+.stop-row.severe .stop-delay{color:var(--error-color,#e53935)}
 .stop-dot{width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color);transform:translateX(1px)}
 .stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.stop-info{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;overflow:hidden}
 .stop-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
 .stop-row.next-stop .stop-name{color:var(--primary-text-color);font-weight:500}
 .stop-row.next-stop .stop-dot{background:var(--secondary-text-color);box-shadow:0 0 0 1px var(--secondary-text-color)}
+.stop-extra{display:flex;align-items:center;gap:7px;min-width:0;min-height:17px}
+.stop-dwell{font-size:.61rem;color:var(--secondary-text-color);white-space:nowrap}
 .next-stop-label{display:inline-flex;align-items:center;margin-left:6px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.52rem;font-weight:800;letter-spacing:.02em;vertical-align:middle}
 .late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
-.stop-times{display:flex;flex-direction:column;align-items:stretch;gap:2px;font-size:.69rem;font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:190px}
-.stop-time-list,.stop-base-time-list{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:12px;align-items:center}
- .stop-time{display:flex;align-items:center;gap:5px;min-height:17px;min-width:0}
- .departure-time{gap:5px}.stop-platform-slot{display:inline-flex;align-items:center;justify-content:flex-start;flex:0 0 34px;width:34px;height:17px}.stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;min-width:22px;height:17px;box-sizing:border-box;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.74rem;font-weight:750;line-height:17px;white-space:nowrap}.stop-platform{font-size:.59rem;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
-.stop-time small{font-size:.57rem;color:var(--secondary-text-color);font-weight:650;text-transform:uppercase;letter-spacing:.03em}
-.stop-time strong{font-size:.69rem;font-weight:700}
-.stop-base-time{display:block;min-width:0;font-size:.62rem;color:var(--primary-text-color);opacity:.9;text-decoration:line-through;text-decoration-color:var(--secondary-text-color);text-decoration-thickness:1px;font-weight:500;text-align:left}
+.stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;min-width:22px;height:17px;box-sizing:border-box;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.74rem;font-weight:750;line-height:17px;white-space:nowrap}
 .stop-train-marker{position:absolute;left:17px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:16px;color:inherit}
 .stop-train-marker .emoji{font-size:15px;line-height:1;color:inherit}
