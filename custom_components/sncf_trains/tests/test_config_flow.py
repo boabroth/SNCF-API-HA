@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -99,6 +100,9 @@ async def test_config_flow_duplicate_entry(hass):
         data={CONF_API_KEY: "existing_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys=None,
+        options={},
+        subentries_data=(),
     )
     existing_entry.add_to_hass(hass)
 
@@ -134,6 +138,9 @@ async def test_train_subentry_happy_path(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys=None,
+        options={},
+        subentries_data=(),
     )
     entry.add_to_hass(hass)
 
@@ -247,6 +254,9 @@ async def test_train_subentry_no_departure_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys=None,
+        options={},
+        subentries_data=(),
     )
     entry.add_to_hass(hass)
 
@@ -285,6 +295,9 @@ async def test_train_subentry_no_arrival_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys=None,
+        options={},
+        subentries_data=(),
     )
     entry.add_to_hass(hass)
 
@@ -363,6 +376,8 @@ async def test_train_subentry_duplicate(hass):
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
         subentries_data=(existing_subentry,),
+        discovery_keys=None,
+        options={},
     )
     entry.add_to_hass(hass)
 
@@ -446,6 +461,8 @@ async def test_options_flow(hass):
         options={},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys=None,
+        subentries_data=(),
     )
     entry.add_to_hass(hass)
 
