@@ -193,6 +193,8 @@ class SncfTrainCard extends HTMLElement {
       :`<span class="actual">${this._escape(real)}</span>`;
     const durationLabel=Number.isFinite(duration)&&duration>0?`${Math.round(duration)} min`:'';
     const platform=this._validPlatform(a.platform);
+    const destinationStops=Array.isArray(a.stops)?a.stops:[];
+    const destination=String(destinationStops[destinationStops.length-1]?.name||a.destination||a.arrival_station||'').trim();
     const showPlatform=this.config.show_platform&&!!platform;
     const platformChange=this._platformChanges[entity.entity_id];
     const showPlatformChange=!!platformChange&&Date.now()-platformChange.at<=10*60*1000;
@@ -228,6 +230,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="station arrive"><span class="station-caption">Arrivée</span>
           <div class="times">${time(baseArr,realArr)}</div>${arrivalInfo}</div>
       </div>
+      ${destination?`<div class="journey-destination">Destination : ${this._escape(destination)}</div>`:''}
       <div class="train-footer">
         <div class="train-meta"><span class="ter-pill">${this._escape(trainLabel)}</span>
           ${trainInfo?`<span class="train-details">${trainInfo}</span>`:''}
@@ -236,6 +239,7 @@ class SncfTrainCard extends HTMLElement {
         </div>
         ${this.config.show_status?`<span class="status"><span class="dot"></span>${label}</span>`:''}
       </div>
+      ${isNext?'<div class="next-train-flag">Prochain train</div>':''}
       ${this._stopDetails(entity,expanded)}
       <div class="expand-chevron" aria-hidden="true"><ha-icon icon="mdi:chevron-down"></ha-icon></div>
     </article>`;
@@ -573,7 +577,7 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
 .train-type{overflow-wrap:anywhere}
 .card-header{display:flex;align-items:center;gap:10px;height:56px;min-height:56px;margin:8px 6px;padding:7px 6px 7px 0;border-radius:28px;background:#262626;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background-color .2s ease}
-.title-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:#171717;color:#fff}
+.title-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--bubble-icon-background-color,var(--bubble-accent-color,var(--secondary-background-color,#171717)));color:#fff}
 .title-icon ha-icon{--mdc-icon-size:20px}
 .card-title{flex:1;min-width:0;font-size:.9rem;font-weight:700;line-height:1.2}
 .collapse-chevron{flex:0 0 auto;color:#fff;--mdc-icon-size:24px;transition:transform .28s ease}
@@ -598,7 +602,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .cancellation-info:hover::after,.cancellation-info:focus-visible::after,.direction-dots.show-cancellation-tooltip .cancellation-info::after{opacity:1;visibility:visible;transform:translateY(0)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--card-background-color,rgba(100,120,160,.15));color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
-.direction-label span{display:block;font-size:1.04rem;font-weight:750;overflow-wrap:anywhere}
+.direction-label span{display:block;font-size:1.12rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:.82rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
@@ -606,6 +610,9 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
 .platform-changed ha-icon{--mdc-icon-size:13px}
+ .journey-destination{margin:4px 4px 0;color:var(--secondary-text-color);font-size:.66rem;font-weight:600;line-height:1.2;text-align:center}
+.next-train-flag{display:flex;align-items:center;gap:5px;margin-top:5px;color:var(--accent);font-size:.52rem;font-weight:750;line-height:1.2;text-transform:uppercase;letter-spacing:.035em}
+.next-train-flag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);flex:0 0 5px}
  .next-platform{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.75rem;line-height:17px;font-weight:750;white-space:nowrap}
 .direction-dots{position:relative;display:flex;justify-content:center;gap:6px;padding:10px 0 5px;min-height:25px}
 .direction-dots span{width:5px;height:5px;border-radius:9px;background:var(--divider-color)}
@@ -621,13 +628,13 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .stop-rail-fill{position:absolute;left:92px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
 .stop-row{position:relative;display:grid;grid-template-columns:68px 20px minmax(0,1fr);align-items:center;min-height:36px;gap:6px;z-index:1}
 .stop-time-column{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-width:0;font-variant-numeric:tabular-nums}
-.stop-time-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:22px;padding:0 7px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--primary-text-color);font-size:.75rem;font-weight:800;line-height:22px;white-space:nowrap}
+.stop-time-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:22px;padding:0 7px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--primary-text-color);font-size:.79rem;font-weight:800;line-height:1;white-space:nowrap}
 .stop-delay{font-size:.62rem;line-height:11px;font-weight:750;color:var(--sncf-warning-color,var(--warning-color,#f59e0b));padding-left:5px;white-space:nowrap}
 .stop-row.severe .stop-delay{color:var(--error-color,#e53935)}
 .stop-dot{width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color);transform:translateX(1px)}
 .stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stop-info{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:7px;min-width:0;overflow:hidden}
-.stop-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem;color:var(--primary-text-color)}
+.stop-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.80rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
 .stop-row.next-stop .stop-name{color:var(--primary-text-color);font-weight:500}
 .stop-row.next-stop .stop-dot{background:var(--secondary-text-color);box-shadow:0 0 0 1px var(--secondary-text-color)}
