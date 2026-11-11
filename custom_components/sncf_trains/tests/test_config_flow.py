@@ -110,7 +110,7 @@ async def test_config_flow_duplicate_entry(hass):
         options={},
         subentries_data=(),
     )
-    hass.config_entries.async_add(existing_entry)
+    await hass.config_entries.async_add(existing_entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(return_value=[{"id": "stop_area:dep"}])
@@ -148,7 +148,7 @@ async def test_train_subentry_happy_path(hass):
         options={},
         subentries_data=(),
     )
-    hass.config_entries.async_add(entry)
+    await hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -172,7 +172,7 @@ async def test_train_subentry_happy_path(hass):
         "custom_components.sncf_trains.config_flow.SncfApiClient",
         return_value=mock_api,
     ):
-        result = await hass.config_entries.subentries.flow.async_init(
+        result = await hass.config_entries.subentries.async_init(
             (entry.entry_id, "train"),
             context={"source": config_entries.SOURCE_USER},
         )
@@ -180,7 +180,7 @@ async def test_train_subentry_happy_path(hass):
         assert result["type"] is FlowResultType.FORM
         assert result["step_id"] == "departure_city"
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_CITY: "Paris",
@@ -190,7 +190,7 @@ async def test_train_subentry_happy_path(hass):
         assert result["type"] is FlowResultType.FORM
         assert result["step_id"] == "departure_station"
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_STATION: "stop_area:dep",
@@ -200,7 +200,7 @@ async def test_train_subentry_happy_path(hass):
         assert result["type"] is FlowResultType.FORM
         assert result["step_id"] == "arrival_city"
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_ARRIVAL_CITY: "Lyon",
@@ -210,7 +210,7 @@ async def test_train_subentry_happy_path(hass):
         assert result["type"] is FlowResultType.FORM
         assert result["step_id"] == "arrival_station"
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_ARRIVAL_STATION: "stop_area:arr",
@@ -220,7 +220,7 @@ async def test_train_subentry_happy_path(hass):
         assert result["type"] is FlowResultType.FORM
         assert result["step_id"] == "time_range"
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_TIME_START: "07:00",
@@ -264,7 +264,7 @@ async def test_train_subentry_no_departure_stations(hass):
         options={},
         subentries_data=(),
     )
-    hass.config_entries.async_add(entry)
+    await hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(return_value=None)
@@ -273,12 +273,12 @@ async def test_train_subentry_no_departure_stations(hass):
         "custom_components.sncf_trains.config_flow.SncfApiClient",
         return_value=mock_api,
     ):
-        result = await hass.config_entries.subentries.flow.async_init(
+        result = await hass.config_entries.subentries.async_init(
             (entry.entry_id, "train"),
             context={"source": config_entries.SOURCE_USER},
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_CITY: "Paris",
@@ -305,7 +305,7 @@ async def test_train_subentry_no_arrival_stations(hass):
         options={},
         subentries_data=(),
     )
-    hass.config_entries.async_add(entry)
+    await hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -324,26 +324,26 @@ async def test_train_subentry_no_arrival_stations(hass):
         "custom_components.sncf_trains.config_flow.SncfApiClient",
         return_value=mock_api,
     ):
-        result = await hass.config_entries.subentries.flow.async_init(
+        result = await hass.config_entries.subentries.async_init(
             (entry.entry_id, "train"),
             context={"source": config_entries.SOURCE_USER},
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_CITY: "Paris",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_STATION: "stop_area:dep",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_ARRIVAL_CITY: "Lyon",
@@ -385,7 +385,7 @@ async def test_train_subentry_duplicate(hass):
         discovery_keys=None,
         options={},
     )
-    hass.config_entries.async_add(entry)
+    await hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -409,40 +409,40 @@ async def test_train_subentry_duplicate(hass):
         "custom_components.sncf_trains.config_flow.SncfApiClient",
         return_value=mock_api,
     ):
-        result = await hass.config_entries.subentries.flow.async_init(
+        result = await hass.config_entries.subentries.async_init(
             (entry.entry_id, "train"),
             context={"source": config_entries.SOURCE_USER},
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_CITY: "Paris",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_DEPARTURE_STATION: "stop_area:dep",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_ARRIVAL_CITY: "Lyon",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_ARRIVAL_STATION: "stop_area:arr",
             },
         )
 
-        result = await hass.config_entries.subentries.flow.async_configure(
+        result = await hass.config_entries.subentries.async_configure(
             result["flow_id"],
             user_input={
                 CONF_TIME_START: "07:00",
@@ -470,7 +470,7 @@ async def test_options_flow(hass):
         discovery_keys=None,
         subentries_data=(),
     )
-    hass.config_entries.async_add(entry)
+    await hass.config_entries.async_add(entry)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
 
