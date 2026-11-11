@@ -192,7 +192,10 @@ class SncfTrainCard extends HTMLElement {
     const label=late?`+${delay} min`:running?'En circulation':arrived?'Arrivé':'À l’heure';
     const duration=Number(a.duration_minutes);
     const progress=arr>dep?Math.max(0,Math.min(100,(now-dep)/(arr-dep)*100)):0;
-    const showTrain=true;
+    const animationDuration=Math.max(0,Number(this.config.animation_duration)||0);
+    const arrivalRetention=Math.max(0,Number(this.config.arrival_retention??30)||0);
+    const showTrain=Number.isFinite(dep)&&Number.isFinite(arr)
+      &&now>=dep-animationDuration*60000&&now<=arr+arrivalRetention*60000;
     const time=(base,real)=>late&&base!==real
       ?`<span class="original">${this._escape(base)}</span><span class="actual">${this._escape(real)}</span>`
       :`<span class="actual">${this._escape(real)}</span>`;
@@ -232,7 +235,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="middle">
           ${this.config.show_track?`<div class="track">
             <div class="track-fill" style="width:${running||arrived?progress:0}%"></div>
-            ${showTrain?`<span class="moving-train" style="left:${progress}%;transform:translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train')}</span>`:''}
+            <span class="moving-train" data-departure="${dep}" data-arrival="${arr}" ${showTrain?'':'hidden'} style="left:${progress}%;transform:translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train')}</span>
           </div>`:'<ha-icon icon="mdi:arrow-right"></ha-icon>'}
         </div>
         <div class="station arrive"><span class="station-caption">Arrivée</span>
@@ -342,7 +345,18 @@ class SncfTrainCard extends HTMLElement {
         nextContainer.classList.add('empty-next');
       }
     }
-    this.shadowRoot.querySelectorAll('[data-departure]').forEach(el=>{
+    const animationDuration=Math.max(0,Number(this.config.animation_duration)||0);
+    const arrivalRetention=Math.max(0,Number(this.config.arrival_retention??30)||0);
+    this.shadowRoot.querySelectorAll('.moving-train[data-departure][data-arrival]').forEach(marker=>{
+      const dep=Number(marker.dataset.departure),arr=Number(marker.dataset.arrival);
+      const visible=Number.isFinite(dep)&&Number.isFinite(arr)
+        &&now>=dep-animationDuration*60000&&now<=arr+arrivalRetention*60000;
+      marker.hidden=!visible;
+      const progress=arr>dep?Math.max(0,Math.min(100,(now-dep)/(arr-dep)*100)):0;
+      marker.style.left=`${progress}%`;
+      marker.style.transform=`translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})`;
+    });
+    this.shadowRoot.querySelectorAll('[data-departure]:not(.moving-train)').forEach(el=>{
       const dep=Number(el.dataset.departure);
       el.textContent=this._countdown(dep,now);
       el.hidden=now>=dep;
@@ -678,7 +692,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .track::before,.track::after{content:'';position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--secondary-text-color);opacity:.55}
 .track::before{left:0}.track::after{right:0}
 .track-fill{height:100%;background:var(--accent);border-radius:9px;transition:width .5s ease}
-.moving-train{position:absolute;top:-26px;transform:translateX(-50%);color:var(--accent);transition:left .5s ease}
+.moving-train{position:absolute;top:-26px;transform:translateX(-50%);color:var(--accent);transition:left .5s ease}.moving-train[hidden]{display:none}
 .moving-train ha-icon{--mdc-icon-size:23px}
 .train-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px;margin-top:12px;min-width:0}
 .train-meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0;color:var(--secondary-text-color);font-size:.72rem}
