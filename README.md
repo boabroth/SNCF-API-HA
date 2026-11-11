@@ -110,6 +110,7 @@ Obtenez votre clé API depuis le portail officiel : [SNCF Open Data](https://dat
 - Mode, direction, numéro
 - Voie de départ (`platform`) et d'arrivée (`arrival_platform`) lorsqu'elles sont disponibles
 - Nombre de rames (`train_units`), composition et type de matériel lorsqu'ils sont connus
+- Perturbations éventuelles : cause (`disruption_cause`), effet (`disruption_effect`) et message SNCF (`disruption_message`)
 
 ---
 
