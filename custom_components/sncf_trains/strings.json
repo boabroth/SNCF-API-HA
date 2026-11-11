@@ -30,6 +30,9 @@
           "outside_interval": "Outside interval (minutes)"
         }
       }
+    },
+    "error": {
+      "invalid_interval": "Intervals must be between 1 and 1440 minutes."
     }
   },
   "config_subentries": {
