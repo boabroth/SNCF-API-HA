@@ -584,6 +584,7 @@ class SncfTrainCard extends HTMLElement {
         t.attributes.base_departure_time,t.attributes.base_arrival_time,
         t.attributes.delay_minutes,t.attributes.has_delay,
         t.attributes.platform,t.attributes.arrival_platform,t.attributes.train_units,t.attributes.train_type,
+        t.attributes.disruption_cause,t.attributes.disruption_effect,t.attributes.disruption_message,
         t.attributes.train_num,t.attributes.stops
       ])]));
       // Avoid replacing the DOM on every Home Assistant state update.
