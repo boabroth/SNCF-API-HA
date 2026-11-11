@@ -43,6 +43,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     async def _setup_frontend(_event: Any = None) -> None:
         """Inner function to register frontend modules."""
+        if hass.http is None:
+            LOGGER.debug("HTTP component is unavailable; skipping card registration.")
+            return
         await hass.http.async_register_static_paths(
             [StaticPathConfig(CARD_URL, str(CARD_FILE), cache_headers=False)]
         )
