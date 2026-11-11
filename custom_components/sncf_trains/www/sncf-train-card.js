@@ -19,6 +19,8 @@ class SncfTrainCard extends HTMLElement {
     this._timer=null;
     this._registry=null;
     this._registryPromise=null;
+    this._deviceRegistry=null;
+    this._deviceRegistryPromise=null;
     this._renderId=0;
     this._activeDirection=0;
     this._expanded={};
@@ -44,6 +46,7 @@ class SncfTrainCard extends HTMLElement {
       this.config.update_interval = Number(this.config.update_interval) / 1000;
     }
     this._registry=null;
+    this._deviceRegistry=null;
     this._painted=false;
     this._signature='';
     this._renderId++;
@@ -104,10 +107,12 @@ class SncfTrainCard extends HTMLElement {
         .finally(()=>{this._registryPromise=null;});
       await this._registryPromise;
     }
-    if(!this._deviceRegistryPromise)this._deviceRegistryPromise=this._hass.callWS({type:'config/device_registry/list'})
-      .then(data=>{this._deviceRegistry=data;return data;})
-      .finally(()=>{this._deviceRegistryPromise=null;});
-    await this._deviceRegistryPromise;
+    if(!this._deviceRegistry){
+      if(!this._deviceRegistryPromise)this._deviceRegistryPromise=this._hass.callWS({type:'config/device_registry/list'})
+        .then(data=>{this._deviceRegistry=data;return data;})
+        .finally(()=>{this._deviceRegistryPromise=null;});
+      await this._deviceRegistryPromise;
+    }
     const now=Date.now();
     return this.config.device_id.map(deviceId=>{
       const device=this._deviceRegistry.find(d=>d.id===deviceId);
