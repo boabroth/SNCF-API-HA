@@ -361,6 +361,8 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
 
         update_intervals = []
         trains = {}
+        all_requests_succeeded = True
+        previous_data = self.data if isinstance(self.data, dict) else {}
 
         max_retries = 3
         retry_delay = 2
@@ -431,9 +433,13 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
             # ---------------------------------------------------------
             if journeys is None or not isinstance(journeys, list):
                 _LOGGER.error(
-                    "Aucune donnée reçue de l'API SNCF pour le trajet '%s'",
+                    "Aucune donnée reçue de l'API SNCF pour le trajet '%s' "
+                    "après %d tentative(s) ; conservation des dernières données",
                     entry.title,
+                    max_retries,
                 )
+                all_requests_succeeded = False
+                trains[subentry_id] = previous_data.get(subentry_id, [])
                 continue
 
             _LOGGER.debug(
@@ -557,5 +563,8 @@ class SncfUpdateCoordinator(DataUpdateCoordinator):
                     self.update_interval.total_seconds() / 60,
                 )
 
-        self.last_successful_update = dt_util.utcnow()
+        # This timestamp represents a complete successful refresh. Do not
+        # advance it when one route failed and its cached data was retained.
+        if all_requests_succeeded and update_intervals:
+            self.last_successful_update = dt_util.utcnow()
         return trains
