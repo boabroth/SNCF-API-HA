@@ -627,7 +627,7 @@ ha-card:not(.collapsed) .card-header{margin:0 6px}
 @keyframes sncf-refresh-spin{to{transform:rotate(360deg)}}
 .panel,.trains{overflow-anchor:none;min-width:0;max-width:100%}
 .loading-state{display:flex;align-items:center;justify-content:center;gap:8px;padding:18px 12px;color:var(--secondary-text-color);font-size:.78rem}.loading-state[hidden]{display:none}.loading-spinner{--mdc-icon-size:19px;animation:sncf-refresh-spin .9s linear infinite;color:var(--primary-color)}
-nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--sncf-raised-background);border:1px solid var(--divider-color)}
+nav{display:flex;align-items:center;gap:7px;margin:2px 12px 0;padding:8px 5px;border-radius:15px;background:var(--sncf-raised-background);border:1px solid var(--sncf-raised-background)}
 nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .cancellation-info{position:absolute;top:5px;right:7px;display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--secondary-text-color);cursor:pointer;z-index:3}
 .cancellation-info ha-icon{--mdc-icon-size:15px}
@@ -657,7 +657,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .direction-dots .cancellation-info{position:absolute;top:1px;right:10px;width:26px;height:24px}
 .trains{padding:2px 12px 0}
 .trains.scrollable{max-height:min(65vh,640px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--divider-color) transparent}
-.train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--divider-color);background:var(--sncf-raised-background);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.train-row{min-width:0;max-width:100%;overflow:hidden;padding:13px 12px 0;margin:9px 0;border-radius:15px;border:1px solid var(--sncf-raised-background);background:var(--sncf-raised-background);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .train-row.next-train{border-color:var(--accent)}
 .stop-details{height:0;overflow:hidden;max-width:100%;border-top:1px solid var(--divider-color);margin-top:0;transition:height .35s cubic-bezier(.4,0,.2,1),max-height .35s cubic-bezier(.4,0,.2,1),margin-top .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
 .stop-timeline{position:relative;padding:0 8px;min-height:36px}
@@ -731,7 +731,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .running .status{color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .arrived .status{color:var(--secondary-text-color);background:color-mix(in srgb,var(--secondary-text-color) 12%,transparent)}
 .cancellation-note{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin:10px 10px 10px;color:var(--secondary-text-color);font-size:.69rem;line-height:1.4;text-align:center}.cancellation-note ha-icon{--mdc-icon-size:15px;flex-shrink:0}
-.more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--divider-color);border-radius:12px;background:var(--sncf-raised-background);color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.more{display:flex;justify-content:center;align-items:center;gap:8px;width:calc(100% - 24px);margin:12px;padding:13px;border:1px solid var(--sncf-raised-background);border-radius:12px;background:var(--sncf-raised-background);color:var(--accent);font-size:.85rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .more ha-icon{--mdc-icon-size:19px}
 .empty{padding:20px;text-align:center;color:var(--secondary-text-color)}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
