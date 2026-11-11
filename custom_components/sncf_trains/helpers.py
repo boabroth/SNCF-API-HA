@@ -118,7 +118,6 @@ def get_duration(journey: dict[str, Any]) -> int:
     return 0
 
 
-
 def attach_disruptions(journeys: list, disruptions: list) -> None:
     """Attach response-level SNCF disruptions to the journeys they affect."""
     if not isinstance(journeys, list) or not isinstance(disruptions, list):
@@ -159,7 +158,9 @@ def attach_disruptions(journeys: list, disruptions: list) -> None:
                 if not isinstance(link, dict) or link.get("type") != "disruption":
                     continue
                 identifier = link.get("id")
-                disruption = disruptions_by_id.get(str(identifier)) if identifier else None
+                disruption = (
+                    disruptions_by_id.get(str(identifier)) if identifier else None
+                )
                 if disruption is not None and disruption not in attached:
                     attached.append(disruption)
 
