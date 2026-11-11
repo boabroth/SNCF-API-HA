@@ -77,7 +77,7 @@ class SncfTrainCard extends HTMLElement {
         device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
         animation_duration:'Afficher le train avant départ (minutes)',
         update_interval:'Actualisation (secondes)',arrival_retention:'Conserver les trains après leur arrivée (minutes)',
-        show_countdown:'Compte à rebours avant le départ',show_track:'Afficher le rail',show_duration:'Afficher la durée',
+        show_countdown:'Compte à rebours avant le départ',show_track:'Afficher la progression du train',show_duration:'Afficher la durée',
         show_status:'Afficher le statut',show_scroll:'Afficher une scroll',show_next_train:'Afficher le prochain train',show_platform:'Afficher la voie de départ',show_arrival_platform:'Afficher la voie d’arrivée',
         show_train_units:'Afficher le nombre de rames',show_train_type:'Afficher le matériel roulant',
         train_emoji:'Icône du train',
