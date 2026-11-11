@@ -245,7 +245,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="middle">
           ${this.config.show_track?`<div class="track">
             <div class="track-fill" style="width:${running||arrived?progress:0}%"></div>
-            <span class="moving-train" data-departure="${dep}" data-arrival="${arr}" ${showTrain?'':'hidden'} style="left:${progress}%;transform:translateX(${progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train',this.config.train_emoji_axial_symmetry)}</span>
+            <span class="moving-train" data-departure="${dep}" data-arrival="${arr}" ${showTrain?'':'hidden'} style="left:${progress<=0?'4px':`${progress}%`};transform:translateX(${progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train',this.config.train_emoji_axial_symmetry)}</span>
           </div>`:'<ha-icon icon="mdi:arrow-right"></ha-icon>'}
         </div>
         <div class="station arrive"><span class="station-caption">Arrivée</span>
@@ -363,7 +363,7 @@ class SncfTrainCard extends HTMLElement {
         &&(now<dep||now<=arr+arrivalRetention*60000);
       marker.hidden=!visible;
       const progress=arr>dep?Math.max(0,Math.min(100,(now-dep)/(arr-dep)*100)):0;
-      marker.style.left=`${progress}%`;
+      marker.style.left=progress<=0?'4px':`${progress}%`;
       marker.style.transform=`translateX(${progress>=100?'-100%':'-50%'})`;
     });
     this.shadowRoot.querySelectorAll('[data-departure]:not(.moving-train)').forEach(el=>{
@@ -648,7 +648,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
  .disruption-heading{display:flex;align-items:center;gap:5px;color:var(--sncf-warning-color,var(--warning-color,#a65b00));font-weight:750}
  .disruption-heading ha-icon{--mdc-icon-size:15px;flex:0 0 auto}
  .disruption-message{padding-left:20px;color:var(--secondary-text-color);overflow-wrap:anywhere}
-.next-train-flag{display:flex;align-items:center;gap:5px;margin-top:0;color:var(--accent);font-size:.52rem;font-weight:750;line-height:1.2;text-transform:uppercase;letter-spacing:.035em}
+.next-train-flag{display:flex;align-items:center;gap:5px;margin-top:6px;color:var(--accent);font-size:.52rem;font-weight:750;line-height:1.2;text-transform:uppercase;letter-spacing:.035em}
 .next-train-flag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);flex:0 0 5px}
  .next-platform{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.75rem;line-height:17px;font-weight:750;white-space:nowrap}
 .direction-dots{position:relative;display:flex;justify-content:center;gap:6px;padding:10px 0 5px;min-height:25px}
