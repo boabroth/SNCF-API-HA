@@ -104,7 +104,7 @@ async def test_config_flow_duplicate_entry(hass):
         options={},
         subentries_data=(),
     )
-    existing_entry.add_to_hass(hass)
+    hass.config_entries.async_add(existing_entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(return_value=[{"id": "stop_area:dep"}])
@@ -142,7 +142,7 @@ async def test_train_subentry_happy_path(hass):
         options={},
         subentries_data=(),
     )
-    entry.add_to_hass(hass)
+    hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -258,7 +258,7 @@ async def test_train_subentry_no_departure_stations(hass):
         options={},
         subentries_data=(),
     )
-    entry.add_to_hass(hass)
+    hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(return_value=None)
@@ -299,7 +299,7 @@ async def test_train_subentry_no_arrival_stations(hass):
         options={},
         subentries_data=(),
     )
-    entry.add_to_hass(hass)
+    hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -379,7 +379,7 @@ async def test_train_subentry_duplicate(hass):
         discovery_keys=None,
         options={},
     )
-    entry.add_to_hass(hass)
+    hass.config_entries.async_add(entry)
 
     mock_api = AsyncMock()
     mock_api.search_stations = AsyncMock(
@@ -464,7 +464,7 @@ async def test_options_flow(hass):
         discovery_keys=None,
         subentries_data=(),
     )
-    entry.add_to_hass(hass)
+    hass.config_entries.async_add(entry)
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
 
