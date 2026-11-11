@@ -41,10 +41,10 @@ async def async_setup_entry(
     for subentry in entry.subentries.values():
         journeys = coordinator.data.get(subentry.subentry_id, [])
 
-        display_count = min(
-            len(journeys),
-            subentry.data.get("train_count", 0),
-        )
+        # Create a stable entity for every configured train slot, even when
+        # the first API response is empty. Sensors become populated as soon
+        # as the coordinator receives journeys on a later refresh.
+        display_count = max(0, int(subentry.data.get("train_count", 0)))
 
         sensors = []
 
@@ -259,7 +259,8 @@ class SncfTrainSensor(
         self.jid = journey_id
 
         entry = self.coordinator.entry.subentries[train_id]
-        journey = coordinator.data[train_id][journey_id]
+        journeys = coordinator.data.get(train_id, [])
+        journey = journeys[journey_id] if journey_id < len(journeys) else {}
 
         section = get_transport_section(journey)
 
