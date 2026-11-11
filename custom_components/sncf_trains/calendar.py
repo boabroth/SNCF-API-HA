@@ -130,6 +130,8 @@ class SNCFCalendar(
                     "arrival": self._event.arrival_date_time,
                     "number": self._event.train_num,
                 }
+            else:
+                self._attr_extra_state_attributes = {}
         else:
             self._event = None
             self._attr_extra_state_attributes = {}
