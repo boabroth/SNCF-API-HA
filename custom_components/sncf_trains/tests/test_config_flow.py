@@ -97,7 +97,7 @@ async def test_config_flow_invalid_api_key(hass):
 
 @pytest.mark.asyncio
 async def test_config_flow_duplicate_entry(hass):
-    """Test that the integration cannot be configured twice."""
+    """Test that a second config flow is rejected for this single-entry integration."""
     existing_entry = config_entries.ConfigEntry(
         version=1,
         minor_version=2,
@@ -106,31 +106,18 @@ async def test_config_flow_duplicate_entry(hass):
         data={CONF_API_KEY: "existing_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
-        discovery_keys=None,
         options={},
         subentries_data=(),
     )
     await hass.config_entries.async_add(existing_entry)
 
-    mock_api = AsyncMock()
-    mock_api.search_stations = AsyncMock(return_value=[{"id": "stop_area:dep"}])
-
-    with patch(
-        "custom_components.sncf_trains.config_flow.SncfApiClient",
-        return_value=mock_api,
-    ):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={"source": config_entries.SOURCE_USER},
-        )
-
-        result = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            user_input={CONF_API_KEY: "new_key"},
-        )
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_USER},
+    )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
+    assert result["reason"] == "single_instance_allowed"
 
 
 @pytest.mark.asyncio
@@ -144,7 +131,6 @@ async def test_train_subentry_happy_path(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
-        discovery_keys=None,
         options={},
         subentries_data=(),
     )
@@ -260,7 +246,6 @@ async def test_train_subentry_no_departure_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
-        discovery_keys=None,
         options={},
         subentries_data=(),
     )
@@ -301,7 +286,6 @@ async def test_train_subentry_no_arrival_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
-        discovery_keys=None,
         options={},
         subentries_data=(),
     )
@@ -382,7 +366,6 @@ async def test_train_subentry_duplicate(hass):
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
         subentries_data=(existing_subentry,),
-        discovery_keys=None,
         options={},
     )
     await hass.config_entries.async_add(entry)
@@ -467,7 +450,6 @@ async def test_options_flow(hass):
         options={},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
-        discovery_keys=None,
         subentries_data=(),
     )
     await hass.config_entries.async_add(entry)
