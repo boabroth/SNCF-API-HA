@@ -638,7 +638,8 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .direction-name{display:block;font-size:1.7rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:1.4rem;font-weight:750}
-.next-departure ha-icon{--mdc-icon-size:18px}\n.next-departure-label{font-size:1.25rem}
+.next-departure ha-icon{--mdc-icon-size:18px}
+.next-departure-label{font-size:1.25rem}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
