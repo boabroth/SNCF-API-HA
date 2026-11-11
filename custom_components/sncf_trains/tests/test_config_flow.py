@@ -25,6 +25,12 @@ from custom_components.sncf_trains.const import (
 )
 
 
+@pytest.fixture(autouse=True)
+def mark_frontend_as_loaded(hass):
+    """Skip frontend setup; these tests only exercise config flows."""
+    hass.config.components.add("frontend")
+
+
 @pytest.mark.asyncio
 async def test_config_flow_happy_path(hass):
     """Test the main config flow with a valid API key."""
