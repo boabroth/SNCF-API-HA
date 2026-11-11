@@ -6,6 +6,11 @@ import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components.sncf_trains.config_flow import (
+    INTERVAL_SCHEMA,
+    TIME_VALUE_SCHEMA,
+    TRAIN_COUNT_SCHEMA,
+)
 from custom_components.sncf_trains.const import (
     CONF_API_KEY,
     CONF_ARRIVAL_CITY,
@@ -462,3 +467,23 @@ async def test_options_flow(hass):
         "update_interval": 5,
         "outside_interval": 30,
     }
+
+
+
+def test_configuration_value_schemas():
+    """Reject invalid times, update intervals, and train counts."""
+    assert TIME_VALUE_SCHEMA("07:30") == "07:30"
+    assert INTERVAL_SCHEMA("5") == 5
+    assert TRAIN_COUNT_SCHEMA("10") == 10
+
+    for invalid_time in ("7:30", "24:00", "12:60", "abc"):
+        with pytest.raises(vol.Invalid):
+            TIME_VALUE_SCHEMA(invalid_time)
+
+    for invalid_interval in (0, -1, 1441):
+        with pytest.raises(vol.Invalid):
+            INTERVAL_SCHEMA(invalid_interval)
+
+    for invalid_count in (0, -1, 101):
+        with pytest.raises(vol.Invalid):
+            TRAIN_COUNT_SCHEMA(invalid_count)
