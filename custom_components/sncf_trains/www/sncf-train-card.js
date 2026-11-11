@@ -175,11 +175,12 @@ class SncfTrainCard extends HTMLElement {
     return `il y a ${hours} h ${String(minutes%60).padStart(2,'0')}`;
   }
   _escape(v){return String(v===undefined||v===null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  _icon(value,fallback){
+  _icon(value,fallback,flip=false){
     const v=String(value||fallback||'');
+    const flipStyle=flip?' style="transform:scaleX(-1)"':'';
     return /^[a-z][a-z0-9-]*:[a-z0-9-]+$/i.test(v)
-      ?`<ha-icon icon="${this._escape(v)}"></ha-icon>`
-      :`<span class="emoji">${this._escape(v)}</span>`;
+      ?`<ha-icon icon="${this._escape(v)}"${flipStyle}></ha-icon>`
+      :`<span class="emoji"${flipStyle}>${this._escape(v)}</span>`;
   }
   _line(entity,isNext=false){
     const a=entity.attributes,now=Date.now(),dep=this._date(a.departure_time),arr=this._date(a.arrival_time);
@@ -235,7 +236,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="middle">
           ${this.config.show_track?`<div class="track">
             <div class="track-fill" style="width:${running||arrived?progress:0}%"></div>
-            <span class="moving-train" data-departure="${dep}" data-arrival="${arr}" ${showTrain?'':'hidden'} style="left:${progress}%;transform:translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train')}</span>
+            <span class="moving-train" data-departure="${dep}" data-arrival="${arr}" ${showTrain?'':'hidden'} style="left:${progress}%;transform:translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train',this.config.train_emoji_axial_symmetry)}</span>
           </div>`:'<ha-icon icon="mdi:arrow-right"></ha-icon>'}
         </div>
         <div class="station arrive"><span class="station-caption">Arrivée</span>
@@ -297,7 +298,7 @@ class SncfTrainCard extends HTMLElement {
       <div class="stop-timeline" data-times="${eventTimes.join(',')}" style="height:${stops.length*36}px">
         <div class="stop-rail"></div>
         <div class="stop-rail-fill" style="height:${position*36}px"></div>
-        <span class="stop-train-marker" style="top:${17+position*36}px">${this._icon(this.config.train_emoji,'mdi:train')}</span>
+        <span class="stop-train-marker" style="top:${17+position*36}px">${this._icon(this.config.train_emoji,'mdi:train',this.config.train_emoji_axial_symmetry)}</span>
         ${rows}
       </div>
     </div>`;
