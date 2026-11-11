@@ -80,10 +80,10 @@ Obtenez votre clé API depuis le portail officiel : [SNCF Open Data](https://dat
 
 | Nom | Description |
 |-----|-------------|
-| `update_interval` | Intervalle de mise à jour **pendant** la plage horaire (défaut : 2 min) |
-| `outside_interval` | Intervalle **hors** plage horaire (défaut : 60 min) |
-| `train_count` | Nombre de trains à afficher |
-| `time_start` / `time_end` | Plage horaire de surveillance (ex. : `06:00` → `09:00`) |
+| `update_interval` | Intervalle de mise à jour **pendant** la plage horaire (défaut : 2 min, de 1 à 1 440 min) |
+| `outside_interval` | Intervalle **hors** plage horaire (défaut : 60 min, de 1 à 1 440 min) |
+| `train_count` | Nombre de trains à afficher (de 1 à 100) |
+| `time_start` / `time_end` | Plage horaire au format `HH:MM` (ex. : `06:00` → `09:00`) |
 
 > 🕑 L'intervalle actif s'active automatiquement **1h avant** le début de plage.
 
