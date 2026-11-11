@@ -237,24 +237,28 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 | `title` | `string` | `Trains SNCF` | Titre de la carte
 | `visible_trains` | `number` | `3` | Trains affichés avant le bouton « Voir plus » (1 à 10) |
 | `show_scroll` | `boolean` | `false` | Active le défilement vertical de la liste des trains |
-| `train_lines` | `number` | `10` | Nombre maximum de trains par sens
+| `train_lines` | `number` | `100` | Nombre maximum de trains par appareil, dans la limite du nombre configuré pour le trajet
 | `direction_titles` | `string` | (vide) | Titres des sens, séparés par `|` (sinon, la direction du premier train)
+| `animation_duration` | `number` | `30` | Fenêtre, en minutes avant le départ, pendant laquelle l’icône du train est affichée
 | `update_interval` | `number` | `30` | Rafraîchissement de l'affichage, en secondes (minimum 5). Les anciennes valeurs en millisecondes (≥ 5000) sont converties automatiquement
+| `arrival_retention` | `number` | `30` | Durée, en minutes, pendant laquelle un train reste visible après son arrivée (0 à 180)
 | `show_countdown` | `boolean` | `true` | Compte à rebours avant le départ sur chaque train
 | `show_track` | `boolean` | `true` | Barre de progression du train
 | `show_duration` | `boolean` | `true` | Durée du trajet
 | `show_status` | `boolean` | `true` | Statut (à l'heure, retard, en circulation, arrivé)
+| `show_next_train` | `boolean` | `true` | Afficher l’indication du prochain train
 | `show_platform` | `boolean` | `true` | Afficher la voie de départ lorsqu'elle est connue
 | `show_arrival_platform` | `boolean` | `true` | Afficher la voie d'arrivée lorsqu'elle est connue
 | `show_train_units` | `boolean` | `true` | Afficher le nombre de rames lorsqu'il est connu
 | `show_train_type` | `boolean` | `true` | Afficher le type de matériel lorsqu'il est connu
 | `train_emoji` | `string` | `mdi:train` | Icône `mdi:` ou emoji affiché sur la barre
+| `train_emoji_axial_symmetry` | `boolean` | `false` | Inverser horizontalement l’icône du train
 
 ### Prérequis et limites de la carte
 
 - Elle lit le registre des entités : elle ne fonctionne que pour les utilisateurs administrateurs.
 - Elle ne retient que les capteurs de l'appareil dont l'`entity_id` contient `train` : ne renommez pas les capteurs « Train N » en supprimant ce mot.
-- Les trains arrivés depuis plus de 30 minutes sont masqués.
+- Les trains arrivés sont conservés pendant `arrival_retention` minutes (30 par défaut).
 - Le libellé « TER » est affiché pour tous les trains.
 
 ### Fonctionnalités
@@ -264,7 +268,7 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 - Affichage des horaires, retards, durée, statut et progression du train.
 - Dépliage du détail du parcours et des arrêts intermédiaires.
 - Option « Trains affichés avant Voir plus » pour limiter la liste initiale.
-- Option facultative « Trains affichés avant scroll » pour limiter la hauteur de la liste et faire défiler les trains à l'intérieur de la carte.
+- Option `show_scroll` pour activer le défilement vertical de la liste des trains.
 
 ### Exemple d'affichage
 
