@@ -196,7 +196,7 @@ class SncfTrainCard extends HTMLElement {
     const animationDuration=Math.max(0,Number(this.config.animation_duration)||0);
     const arrivalRetention=Math.max(0,Number(this.config.arrival_retention??30)||0);
     const showTrain=Number.isFinite(dep)&&Number.isFinite(arr)
-      &&now>=dep-animationDuration*60000&&now<=arr+arrivalRetention*60000;
+      &&(now<dep||now<=arr+arrivalRetention*60000);
     const time=(base,real)=>late&&base!==real
       ?`<span class="original">${this._escape(base)}</span><span class="actual">${this._escape(real)}</span>`
       :`<span class="actual">${this._escape(real)}</span>`;
@@ -361,7 +361,7 @@ class SncfTrainCard extends HTMLElement {
     this.shadowRoot.querySelectorAll('.moving-train[data-departure][data-arrival]').forEach(marker=>{
       const dep=Number(marker.dataset.departure),arr=Number(marker.dataset.arrival);
       const visible=Number.isFinite(dep)&&Number.isFinite(arr)
-        &&now>=dep-animationDuration*60000&&now<=arr+arrivalRetention*60000;
+        &&(now<dep||now<=arr+arrivalRetention*60000);
       marker.hidden=!visible;
       const progress=arr>dep?Math.max(0,Math.min(100,(now-dep)/(arr-dep)*100)):0;
       marker.style.left=`${progress}%`;
