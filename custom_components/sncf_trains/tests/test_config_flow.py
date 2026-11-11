@@ -106,6 +106,7 @@ async def test_config_flow_duplicate_entry(hass):
         data={CONF_API_KEY: "existing_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         options={},
         subentries_data=(),
     )
@@ -131,6 +132,7 @@ async def test_train_subentry_happy_path(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         options={},
         subentries_data=(),
     )
@@ -246,6 +248,7 @@ async def test_train_subentry_no_departure_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         options={},
         subentries_data=(),
     )
@@ -286,6 +289,7 @@ async def test_train_subentry_no_arrival_stations(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         options={},
         subentries_data=(),
     )
@@ -365,6 +369,7 @@ async def test_train_subentry_duplicate(hass):
         data={CONF_API_KEY: "valid_key"},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         subentries_data=(existing_subentry,),
         options={},
     )
@@ -450,6 +455,7 @@ async def test_options_flow(hass):
         options={},
         source=config_entries.SOURCE_USER,
         unique_id="sncf_trains",
+        discovery_keys={},
         subentries_data=(),
     )
     await hass.config_entries.async_add(entry)
