@@ -36,7 +36,7 @@ class SncfTrainCard extends HTMLElement {
     this.config={
       title:'Trains SNCF',train_lines:100,visible_trains:3,direction_titles:'',animation_duration:30,update_interval:30,arrival_retention:30,
       train_emoji:'mdi:train',train_emoji_axial_symmetry:false,
-      show_track:true,show_duration:true,show_status:true,show_countdown:true,
+      show_track:true,show_duration:true,show_status:true,show_countdown:true,show_destination:true,
       show_platform:true,show_arrival_platform:true,show_train_units:true,show_train_type:true,
       ...config,device_id:ids,show_scroll:!!config.show_scroll,show_next_train:config.show_next_train!==false
     };
@@ -68,7 +68,7 @@ class SncfTrainCard extends HTMLElement {
         {name:'animation_duration',selector:{number:{min:0,max:100,step:1}}},
         {name:'update_interval',selector:{number:{min:5,max:3600,step:1}}},
         {name:'arrival_retention',selector:{number:{min:0,max:180,step:1}}},
-        bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),bool('show_scroll',false),bool('show_next_train',true),
+        bool('show_countdown'),bool('show_track'),bool('show_duration'),bool('show_status'),bool('show_destination',true),bool('show_scroll',false),bool('show_next_train',true),
         bool('show_platform'),bool('show_arrival_platform'),bool('show_train_units'),bool('show_train_type'),
         {name:'train_emoji',selector:{icon:{}}},
         bool('train_emoji_axial_symmetry')
@@ -77,7 +77,7 @@ class SncfTrainCard extends HTMLElement {
         device_id:'Appareils SNCF',title:'Titre',visible_trains:'Trains affichés avant Voir plus',direction_titles:'Titres des directions (séparés par |)',train_lines:'Nombre de trains',
         animation_duration:'Afficher le train avant départ (minutes)',
         update_interval:'Actualisation (secondes)',arrival_retention:'Conserver les trains après leur arrivée (minutes)',
-        show_countdown:'Compte à rebours avant le départ',show_track:'Afficher la progression du train',show_duration:'Afficher la durée',
+        show_countdown:'Compte à rebours avant le départ',show_destination:'Afficher la destination',show_track:'Afficher la progression du train',show_duration:'Afficher la durée',
         show_status:'Afficher le statut',show_scroll:'Afficher une scroll',show_next_train:'Afficher le prochain train',show_platform:'Afficher la voie de départ',show_arrival_platform:'Afficher la voie d’arrivée',
         show_train_units:'Afficher le nombre de rames',show_train_type:'Afficher le matériel roulant',
         train_emoji:'Icône du train',
@@ -251,7 +251,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="station arrive"><span class="station-caption">Arrivée</span>
           <div class="times">${time(baseArr,realArr)}</div>${arrivalInfo}</div>
       </div>
-      ${destination?`<div class="journey-destination">Destination : ${this._escape(destination)}</div>`:''}
+      ${destination&&this.config.show_destination?`<div class="journey-destination">${this._escape(destination)}</div>`:''}
       ${disruptionInfo}
       <div class="train-footer">
         <div class="train-meta"><span class="ter-pill">${this._escape(trainLabel)}</span>
@@ -348,7 +348,7 @@ class SncfTrainCard extends HTMLElement {
         const departure=this._date(next.attributes.departure_time);
         const platform=String(next.attributes.platform||'').trim();
         const validPlatform=platform&&!['N/A','UNKNOWN','UNAVAILABLE','NONE'].includes(platform.toUpperCase());
-        nextContainer.innerHTML=`<ha-icon icon="mdi:clock-fast"></ha-icon><span>Prochain train ${this._countdown(departure,now).toLowerCase()}</span>${validPlatform?`<span class="next-platform">Voie ${this._escape(platform)}</span>`:''}`;
+        nextContainer.innerHTML=`<ha-icon icon="mdi:clock-fast"></ha-icon><span class="next-departure-label">Prochain train ${this._countdown(departure,now).toLowerCase()}</span>${validPlatform?`<span class="next-platform">Voie ${this._escape(platform)}</span>`:''}`;
         nextContainer.classList.remove('empty-next');
       }else{
         nextContainer.textContent='Aucun prochain train';
@@ -638,7 +638,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .direction-name{display:block;font-size:1.7rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:1.4rem;font-weight:750}
-.next-departure ha-icon{--mdc-icon-size:15px}
+.next-departure ha-icon{--mdc-icon-size:18px}\n.next-departure-label{font-size:1.25rem}
 .next-departure.empty-next{color:var(--secondary-text-color);font-weight:500}
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
@@ -681,7 +681,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
 .stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;min-width:22px;height:17px;box-sizing:border-box;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.74rem;font-weight:750;line-height:17px;white-space:nowrap}
-.stop-train-marker{position:absolute;left:80px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--secondary-background-color,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
+.stop-train-marker{position:absolute;left:80px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--ha-card-background,var(--card-background-color));color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:16px;color:inherit}
 .stop-train-marker .emoji{font-size:15px;line-height:1;color:inherit}
 .train-bottom-row{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;min-height:24px;margin:0 -12px;padding:0 12px}
