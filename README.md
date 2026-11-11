@@ -239,7 +239,7 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 | `show_scroll` | `boolean` | `false` | Active le défilement vertical de la liste des trains |
 | `train_lines` | `number` | `100` | Nombre maximum de trains par appareil, dans la limite du nombre configuré pour le trajet
 | `direction_titles` | `string` | (vide) | Titres des sens, séparés par `|` (sinon, la direction du premier train)
-| `animation_duration` | `number` | `30` | Fenêtre, en minutes avant le départ, pendant laquelle l’icône du train est affichée
+| `animation_duration` | `number` | `30` | Affiche l’icône à partir de ce nombre de minutes avant le départ, pendant le trajet et jusqu’à la fin de `arrival_retention`
 | `update_interval` | `number` | `30` | Rafraîchissement de l'affichage, en secondes (minimum 5). Les anciennes valeurs en millisecondes (≥ 5000) sont converties automatiquement
 | `arrival_retention` | `number` | `30` | Durée, en minutes, pendant laquelle un train reste visible après son arrivée (0 à 180)
 | `show_countdown` | `boolean` | `true` | Compte à rebours avant le départ sur chaque train
@@ -259,7 +259,7 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 - Elle lit le registre des entités : elle ne fonctionne que pour les utilisateurs administrateurs.
 - Elle ne retient que les capteurs de l'appareil dont l'`entity_id` contient `train` : ne renommez pas les capteurs « Train N » en supprimant ce mot.
 - Les trains arrivés sont conservés pendant `arrival_retention` minutes (30 par défaut).
-- Le libellé « TER » est affiché pour tous les trains.
+- Le libellé du train utilise le mode commercial fourni par SNCF (TER, TGV, etc.) et son numéro lorsqu'il est disponible.
 
 ### Fonctionnalités
 
