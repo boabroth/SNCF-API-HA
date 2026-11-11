@@ -187,7 +187,7 @@ class SncfTrainCard extends HTMLElement {
     const label=late?`+${delay} min`:running?'En circulation':arrived?'Arrivé':'À l’heure';
     const duration=Number(a.duration_minutes);
     const progress=arr>dep?Math.max(0,Math.min(100,(now-dep)/(arr-dep)*100)):0;
-    const showTrain=running;
+    const showTrain=true;
     const time=(base,real)=>late&&base!==real
       ?`<span class="original">${this._escape(base)}</span><span class="actual">${this._escape(real)}</span>`
       :`<span class="actual">${this._escape(real)}</span>`;
@@ -224,7 +224,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="middle">
           ${this.config.show_track?`<div class="track">
             <div class="track-fill" style="width:${running||arrived?progress:0}%"></div>
-            ${showTrain?`<span class="moving-train" style="left:${progress}%">${this._icon(this.config.train_emoji,'mdi:train')}</span>`:''}
+            ${showTrain?`<span class="moving-train" style="left:${progress}%;transform:translateX(${progress<=0?'0':progress>=100?'-100%':'-50%'})">${this._icon(this.config.train_emoji,'mdi:train')}</span>`:''}
           </div>`:'<ha-icon icon="mdi:arrow-right"></ha-icon>'}
         </div>
         <div class="station arrive"><span class="station-caption">Arrivée</span>
