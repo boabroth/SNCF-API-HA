@@ -191,7 +191,10 @@ class SncfTrainCard extends HTMLElement {
     const time=(base,real)=>late&&base!==real
       ?`<span class="original">${this._escape(base)}</span><span class="actual">${this._escape(real)}</span>`
       :`<span class="actual">${this._escape(real)}</span>`;
-    const durationLabel=Number.isFinite(duration)&&duration>0?`${Math.round(duration)} min`:'';
+    const durationMinutes=Math.round(duration);
+    const durationLabel=Number.isFinite(duration)&&duration>0
+      ?durationMinutes<60?`${durationMinutes} min`:`${Math.floor(durationMinutes/60)} h${durationMinutes%60?` ${durationMinutes%60} min`:''}`
+      :'';
     const platform=this._validPlatform(a.platform);
     const destinationStops=Array.isArray(a.stops)?a.stops:[];
     const destination=String(destinationStops[destinationStops.length-1]?.name||a.destination||a.arrival_station||'').trim();
