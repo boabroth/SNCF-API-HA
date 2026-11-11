@@ -635,7 +635,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .cancellation-info:hover::after,.cancellation-info:focus-visible::after,.direction-dots.show-cancellation-tooltip .cancellation-info::after{opacity:1;visibility:visible;transform:translateY(0)}
 .arrow-btn{display:grid;place-items:center;flex:0 0 36px;width:36px;height:38px;border:0;border-radius:11px;background:var(--sncf-raised-background);color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .direction-label{flex:1;min-width:0;text-align:center;line-height:1.3}
-.direction-name{display:block;font-size:1.5rem;font-weight:750;overflow-wrap:anywhere}
+.direction-name{display:block;font-size:1.7rem;font-weight:750;overflow-wrap:anywhere}
 .direction-label small{display:block;color:var(--secondary-text-color);font-size:.7rem;margin-top:4px}
 .next-departure{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;margin-top:6px;color:var(--success-color,#43a047);font-size:1.4rem;font-weight:750}
 .next-departure ha-icon{--mdc-icon-size:15px}
