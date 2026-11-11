@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import SncfDataConfigEntry
 from .const import (
@@ -109,11 +110,16 @@ class SNCFCalendar(
         events = self._fetch_journeys()
 
         if events:
-            now = datetime.now()
-
-            self._event = min(
-                events,
-                key=lambda event: abs(event.start.replace(tzinfo=None) - now),
+            now = dt_util.now()
+            upcoming_events = [event for event in events if event.start >= now]
+            active_events = [
+                event for event in events if event.start <= now < event.end
+            ]
+            self._event = (
+                min(upcoming_events, key=lambda event: event.start)
+                if upcoming_events
+                else active_events[0] if active_events
+                else None
             )
 
             if self._event:
@@ -138,7 +144,24 @@ class SNCFCalendar(
         if not self.available:
             return []
 
-        return self._fetch_journeys()
+        return [
+            event
+            for event in self._fetch_journeys()
+            if event.end >= start_date and event.start <= end_date
+        ]
+
+    def _transport_section(self, journey: dict) -> dict:
+        """Return the public transport section, with legacy-format fallback."""
+        sections = journey.get("sections", [])
+        if not isinstance(sections, list):
+            return {}
+        for section in sections:
+            if isinstance(section, dict) and section.get("type") == "public_transport":
+                return section
+        return next(
+            (section for section in sections if isinstance(section, dict)),
+            {},
+        )
 
     def _async_calculate_delay(
         self,
@@ -149,13 +172,7 @@ class SNCFCalendar(
         """Calculate the delay for a journey."""
         arr_dt = parse_datetime(journey.get("arrival_date_time", ""))
 
-        sections = journey.get("sections", [])
-
-        if not isinstance(sections, list) or not sections:
-            section = {}
-        else:
-            section = sections[0]
-
+        section = self._transport_section(journey)
         base_arr_dt = parse_datetime(section.get("base_arrival_date_time", ""))
 
         delay = (
@@ -229,20 +246,11 @@ class SNCFCalendar(
                     )
                     continue
 
-                sections = journey.get("sections", [])
+                section = self._transport_section(journey)
 
-                if not isinstance(sections, list) or not sections:
+                if not section:
                     _LOGGER.debug(
-                        "Journey[%d] ignoré : aucune section",
-                        journey_index,
-                    )
-                    continue
-
-                section = sections[0]
-
-                if not isinstance(section, dict):
-                    _LOGGER.debug(
-                        "Journey[%d] ignoré : première section invalide",
+                        "Journey[%d] ignoré : aucune section exploitable",
                         journey_index,
                     )
                     continue
