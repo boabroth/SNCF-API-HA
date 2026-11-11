@@ -666,13 +666,13 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .stop-rail-fill{position:absolute;left:92px;top:17px;width:2px;background:var(--accent);transition:height .5s ease}
 .stop-row{position:relative;display:grid;grid-template-columns:68px 20px minmax(0,1fr);align-items:center;min-height:36px;gap:6px;z-index:1}
 .stop-time-column{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-width:0;font-variant-numeric:tabular-nums}
-.stop-time-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:22px;padding:0 7px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--primary-text-color);font-size:.79rem;font-weight:800;line-height:1;white-space:nowrap}
+.stop-time-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:20px;padding:0 7px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--primary-text-color);font-size:.9rem;font-weight:800;line-height:1;white-space:nowrap}
 .stop-delay{font-size:.62rem;line-height:11px;font-weight:750;color:var(--sncf-warning-color,var(--warning-color,#f59e0b));padding-left:5px;white-space:nowrap}
 .stop-row.severe .stop-delay{color:var(--error-color,#e53935)}
 .stop-dot{width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--secondary-text-color);border:2px solid var(--secondary-background-color,var(--card-background-color));box-shadow:0 0 0 1px var(--secondary-text-color);transform:translateX(1px)}
 .stop-row.passed .stop-dot{background:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .stop-info{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:7px;min-width:0;overflow:hidden}
-.stop-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.80rem;color:var(--primary-text-color)}
+.stop-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.87rem;color:var(--primary-text-color)}
 .stop-row.passed .stop-name{color:var(--accent)}
 .stop-row.next-stop .stop-name{color:var(--primary-text-color);font-weight:500}
 .stop-row.next-stop .stop-dot{background:var(--secondary-text-color);box-shadow:0 0 0 1px var(--secondary-text-color)}
