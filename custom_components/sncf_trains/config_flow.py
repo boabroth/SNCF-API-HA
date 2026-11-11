@@ -61,6 +61,7 @@ class SncfTrainsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 if self.source == "user":
                     await self.async_set_unique_id("sncf_trains")
+                    self._abort_if_unique_id_configured()
                     return self.async_create_entry(title="Trains SNCF", data=user_input)
                 else:
                     return self.async_update_reload_and_abort(
