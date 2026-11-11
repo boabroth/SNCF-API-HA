@@ -211,9 +211,10 @@ async def test_coordinator_api_returns_none(hass):
     ):
         data = await coordinator._async_update_data()
 
-    assert data == {}
+    assert data == {"subentry_1": []}
 
     assert mock_api.fetch_journeys.await_count == 3
+    assert coordinator.last_successful_update is None
 
 
 @pytest.mark.asyncio
@@ -240,9 +241,42 @@ async def test_coordinator_api_returns_invalid_data(hass):
     ):
         data = await coordinator._async_update_data()
 
-    assert data == {}
+    assert data == {"subentry_1": []}
 
     mock_api.fetch_journeys.assert_awaited_once()
+    assert coordinator.last_successful_update is None
+
+
+@pytest.mark.asyncio
+async def test_coordinator_preserves_previous_data_when_api_fails(hass):
+    """Keep the last known journeys when a route refresh fails."""
+    subentry = _create_subentry()
+    entry = _create_entry(subentries={"subentry_1": subentry})
+    coordinator = SncfUpdateCoordinator(hass, entry)
+    previous_journeys = [{"id": "cached_journey", "nb_transfers": 0}]
+    coordinator.data = {"subentry_1": previous_journeys}
+    previous_update = datetime(2026, 8, 20, 8, 0)
+    coordinator.last_successful_update = previous_update
+
+    mock_api = AsyncMock()
+    mock_api.fetch_journeys = AsyncMock(return_value=None)
+    coordinator.api_client = mock_api
+
+    with (
+        patch(
+            "custom_components.sncf_trains.coordinator.dt_util.now",
+            return_value=datetime(2026, 8, 21, 8, 0),
+        ),
+        patch(
+            "custom_components.sncf_trains.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ),
+    ):
+        data = await coordinator._async_update_data()
+
+    assert data == {"subentry_1": previous_journeys}
+    assert coordinator.last_successful_update == previous_update
+    assert mock_api.fetch_journeys.await_count == 3
 
 
 @pytest.mark.asyncio
