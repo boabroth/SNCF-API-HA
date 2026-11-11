@@ -116,3 +116,102 @@ def get_duration(journey: dict[str, Any]) -> int:
         return int((arr - dep).total_seconds() / 60)
 
     return 0
+
+
+
+def attach_disruptions(journeys: list, disruptions: list) -> None:
+    """Attach response-level SNCF disruptions to the journeys they affect."""
+    if not isinstance(journeys, list) or not isinstance(disruptions, list):
+        return
+
+    disruptions_by_id: dict[str, dict[str, Any]] = {}
+    for disruption in disruptions:
+        if not isinstance(disruption, dict):
+            continue
+        for key in ("id", "disruption_id", "impact_id"):
+            identifier = disruption.get(key)
+            if identifier:
+                disruptions_by_id[str(identifier)] = disruption
+
+    for journey in journeys:
+        if not isinstance(journey, dict):
+            continue
+
+        attached: list[dict[str, Any]] = []
+        sections = journey.get("sections")
+        if not isinstance(sections, list):
+            journey["disruptions"] = attached
+            continue
+
+        for section in sections:
+            if not isinstance(section, dict):
+                continue
+
+            links = section.get("links")
+            links = links if isinstance(links, list) else []
+            display = section.get("display_informations")
+            if isinstance(display, dict):
+                display_links = display.get("links")
+                if isinstance(display_links, list):
+                    links = [*links, *display_links]
+
+            for link in links:
+                if not isinstance(link, dict) or link.get("type") != "disruption":
+                    continue
+                identifier = link.get("id")
+                disruption = disruptions_by_id.get(str(identifier)) if identifier else None
+                if disruption is not None and disruption not in attached:
+                    attached.append(disruption)
+
+        journey["disruptions"] = attached
+
+
+def disruption_summary(journey: dict[str, Any]) -> dict[str, str | None]:
+    """Return the cause, effect and message of a journey's first disruption."""
+    summary: dict[str, str | None] = {
+        "disruption_cause": None,
+        "disruption_effect": None,
+        "disruption_message": None,
+    }
+    disruptions = journey.get("disruptions")
+    if not isinstance(disruptions, list) or not disruptions:
+        return summary
+
+    main = disruptions[0]
+    if not isinstance(main, dict):
+        return summary
+
+    cause = main.get("cause")
+    if not isinstance(cause, str) or not cause:
+        impacted_objects = main.get("impacted_objects")
+        if isinstance(impacted_objects, list):
+            for impacted in impacted_objects:
+                if not isinstance(impacted, dict):
+                    continue
+                impacted_stops = impacted.get("impacted_stops")
+                if not isinstance(impacted_stops, list):
+                    continue
+                cause = next(
+                    (
+                        stop.get("cause")
+                        for stop in impacted_stops
+                        if isinstance(stop, dict)
+                        and isinstance(stop.get("cause"), str)
+                        and stop.get("cause")
+                    ),
+                    None,
+                )
+                if cause:
+                    break
+
+    severity = main.get("severity")
+    effect = severity.get("effect") if isinstance(severity, dict) else None
+    messages = main.get("messages")
+    message = None
+    if isinstance(messages, list) and messages and isinstance(messages[0], dict):
+        message = messages[0].get("text")
+
+    summary["disruption_cause"] = cause if isinstance(cause, str) else None
+    summary["disruption_effect"] = effect if isinstance(effect, str) else None
+    summary["disruption_message"] = message if isinstance(message, str) else None
+    return summary
