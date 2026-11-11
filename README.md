@@ -66,7 +66,7 @@ Plusieurs trajets peuvent être configurés séparément.
 
 ## 🔐 Clé API SNCF
 
-Obtenez votre clé ici : https://numerique.sncf.com/startup/api/ -> Site HS
+Obtenez votre clé API depuis le portail officiel : [SNCF Open Data](https://data.sncf.com/). Consultez la documentation API pour les modalités d’accès et les quotas associés à votre compte.
 
 1. Créez un compte ou connectez-vous
 2. Générez une clé API gratuite
@@ -93,13 +93,13 @@ Obtenez votre clé ici : https://numerique.sncf.com/startup/api/ -> Site HS
 
 - `sensor.sncf_<gare_dep>_<gare_arr>` — capteur principal du trajet
 - `sensor.sncf_train_X_<gare_dep>_<gare_arr>` — capteur par train
-- `calendar.trains` — calendrier des prochains départs
+- `calendar.*` — calendrier des prochains départs (une entité associée à l’intégration)
 - `sensor.sncf_tous_les_trains_ligne_X`
 
 ### Attributs du capteur principal
 
 - Nombre de trajets
-- Informations les inervalles
+- Intervalles de mise à jour (actuel et configuré)
 
 ### Capteurs secondaires (enfants) pour chaque train
 
@@ -236,7 +236,7 @@ Le `device_id` correspond à l'appareil créé lors de la configuration du traje
 | `device_id` | `string` ou `list` | requis | Appareil(s) SNCF à afficher
 | `title` | `string` | `Trains SNCF` | Titre de la carte
 | `visible_trains` | `number` | `3` | Trains affichés avant le bouton « Voir plus » (1 à 10) |
-| `scroll_trains` | `number` | (vide) | Nombre de trains visibles dans la liste défilante (1 à 100). Vide : aucun scroll ; le défilement apparaît uniquement si le nombre de trains dépasse cette valeur |
+| `show_scroll` | `boolean` | `false` | Active le défilement vertical de la liste des trains |
 | `train_lines` | `number` | `10` | Nombre maximum de trains par sens
 | `direction_titles` | `string` | (vide) | Titres des sens, séparés par `|` (sinon, la direction du premier train)
 | `update_interval` | `number` | `30` | Rafraîchissement de l'affichage, en secondes (minimum 5). Les anciennes valeurs en millisecondes (≥ 5000) sont converties automatiquement
