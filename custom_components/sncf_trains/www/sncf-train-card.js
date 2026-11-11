@@ -221,7 +221,8 @@ class SncfTrainCard extends HTMLElement {
     const trainType=String(a.train_type||'').trim();
     const showType=this.config.show_train_type&&trainType;
     const trainNumber=String(a.train_num||'').trim();
-    const trainLabel=trainNumber? `TER ${trainNumber}` : 'TER';
+    const commercialMode=String(a.commercial_mode||a.physical_mode||'Train').trim();
+    const trainLabel=trainNumber?`${commercialMode} ${trainNumber}`:commercialMode;
     const expanded=!!this._expanded[entity.entity_id];
     const departureInfo=platformSlot?`<div class="platform-slot">${showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:''}</div>`:'';
     const trainInfo=[
