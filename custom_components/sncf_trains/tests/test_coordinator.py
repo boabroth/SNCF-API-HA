@@ -17,6 +17,7 @@ from custom_components.sncf_trains.const import (
     CONF_TO,
     CONF_UPDATE_INTERVAL,
     DOMAIN,
+    DEFAULT_TRAIN_COUNT,
 )
 from custom_components.sncf_trains.coordinator import SncfUpdateCoordinator
 
@@ -119,7 +120,7 @@ async def test_coordinator_success(hass):
         "stop_area:dep",
         "stop_area:arr",
     )
-    assert call_args.kwargs == {"count": 10}
+    assert call_args.kwargs == {"count": DEFAULT_TRAIN_COUNT}
 
     assert coordinator.update_interval == timedelta(minutes=2)
 
