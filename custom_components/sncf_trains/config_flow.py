@@ -15,6 +15,11 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SncfApiClient
+TIME_VALUE_SCHEMA = vol.All(str, vol.Match(r"^(?:[01]\d|2[0-3]):[0-5]\d$"))
+INTERVAL_SCHEMA = vol.All(vol.Coerce(int), vol.Range(min=1, max=1440))
+TRAIN_COUNT_SCHEMA = vol.All(vol.Coerce(int), vol.Range(min=1, max=100))
+
+
 from .const import (
     CONF_API_KEY,
     CONF_ARRIVAL_CITY,
@@ -143,7 +148,7 @@ class SncfTrainsOptionsFlowHandler(OptionsFlow):
                     default=entry.options.get(
                         CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
                     ),
-                ): int,
+                ): INTERVAL_SCHEMA,
                 vol.Required(
                     CONF_OUTSIDE_INTERVAL,
                     default=entry.options.get(
@@ -283,9 +288,9 @@ class TrainSubentryFlowHandler(ConfigSubentryFlow):
             step_id="time_range",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_TIME_START, default=DEFAULT_TIME_START): str,
-                    vol.Required(CONF_TIME_END, default=DEFAULT_TIME_END): str,
-                    vol.Required(CONF_TRAIN_COUNT, default=DEFAULT_TRAIN_COUNT): int,
+                    vol.Required(CONF_TIME_START, default=DEFAULT_TIME_START): TIME_VALUE_SCHEMA,
+                    vol.Required(CONF_TIME_END, default=DEFAULT_TIME_END): TIME_VALUE_SCHEMA,
+                    vol.Required(CONF_TRAIN_COUNT, default=DEFAULT_TRAIN_COUNT): TRAIN_COUNT_SCHEMA,
                 }
             ),
         )
