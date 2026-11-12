@@ -208,6 +208,7 @@ class SncfTrainCard extends HTMLElement {
     const destinationStops=Array.isArray(a.stops)?a.stops:[];
     const destination=String(a.direction||a.destination||a.arrival_station||destinationStops[destinationStops.length-1]?.name||'').trim();
     const showPlatform=this.config.show_platform&&!!platform;
+    const showDestination=this.config.show_destination&&!!destination;
     const platformChange=this._platformChanges[entity.entity_id];
     const showPlatformChange=!!platformChange&&Date.now()-platformChange.at<=10*60*1000;
     const platformChangeNotice=showPlatformChange?`<span class="platform-changed"><ha-icon icon="mdi:swap-horizontal"></ha-icon>Voie modifiée</span>`:'';
@@ -232,7 +233,7 @@ class SncfTrainCard extends HTMLElement {
     const commercialMode=String(a.commercial_mode||a.physical_mode||'Train').trim();
     const trainLabel=trainNumber?`${commercialMode} ${trainNumber}`:commercialMode;
     const expanded=!!this._expanded[entity.entity_id];
-    const departureInfo=platformSlot?`<div class="platform-slot">${showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:''}</div>`:'';
+    const departureInfo=platformSlot||showDestination?`<div class="platform-slot departure-info-line">${showPlatform?`<div class="platform-line departure-platform"><span class="platform-badge">Voie ${this._escape(platform)}</span></div>`:''}${showDestination?`<span class="journey-destination">${this._escape(destination)}</span>`:''}</div>`:'';
     const trainInfo=[
       showUnits?`<span class="train-detail"><ha-icon icon="mdi:train-variant"></ha-icon>${units} ${units===1?'rame':'rames'}</span>`:'',
       showType?`<span class="train-detail train-type">${this._escape(trainType)}</span>`:''
@@ -251,7 +252,7 @@ class SncfTrainCard extends HTMLElement {
         <div class="station arrive"><span class="station-caption">Arrivée</span>
           <div class="times">${time(baseArr,realArr)}</div>${arrivalInfo}</div>
       </div>
-      ${destination&&this.config.show_destination?`<div class="journey-destination">${this._escape(destination)}</div>`:''}
+      
       ${disruptionInfo}
       <div class="train-footer">
         <div class="train-meta"><span class="ter-pill">${this._escape(trainLabel)}</span>
@@ -644,7 +645,9 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .data-freshness{display:block;margin:4px 14px 10px;color:var(--secondary-text-color);font-size:.58rem;font-weight:400;line-height:1.2;text-align:right;opacity:.72}
 .platform-changed{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:color-mix(in srgb,var(--warning-color,#f59e0b) 14%,transparent);color:var(--warning-color,#f59e0b);font-size:.65rem;font-weight:750;white-space:nowrap}
 .platform-changed ha-icon{--mdc-icon-size:13px}
- .journey-destination{margin:4px 4px 0;color:var(--secondary-text-color);font-size:.9rem;font-weight:600;line-height:1.2;text-align:center}
+ .journey-destination{margin:0;color:var(--secondary-text-color);font-size:.9rem;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.departure-info-line{display:flex;align-items:center;gap:8px;min-height:20px}
+.departure-info-line .journey-destination{position:relative;top:-2px}
  .disruption-info{display:flex;flex-direction:column;gap:3px;margin:9px 2px 0;padding:8px 10px;border:1px solid color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 35%,var(--divider-color));border-radius:9px;background:color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 8%,transparent);color:var(--primary-text-color);font-size:.69rem;line-height:1.35}
  .disruption-heading{display:flex;align-items:center;gap:5px;color:var(--sncf-warning-color,var(--warning-color,#a65b00));font-weight:750}
  .disruption-heading ha-icon{--mdc-icon-size:15px;flex:0 0 auto}
