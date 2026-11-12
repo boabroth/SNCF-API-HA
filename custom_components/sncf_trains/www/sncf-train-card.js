@@ -609,7 +609,8 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:0;white-space:nowrap}
 .arrival-slot{justify-content:flex-end}
 .platform-badge{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.76rem;line-height:17px;font-weight:750;white-space:nowrap}
-.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
+.arrival-platform{align-self:flex-end;justify-content:flex-end}
+.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .train-detail ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .platform-inline{font-weight:650;color:var(--primary-text-color)}
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
@@ -707,7 +708,8 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .train-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.stop-details,.expand-chevron ha-icon,.stop-train-marker,.stop-rail-fill{transition:none}}
 .journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:8px;min-width:0;width:100%}
-.station{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}\n.station.depart{overflow:visible}
+.station{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}
+.station.depart{overflow:visible}
 .station.arrive{text-align:right}
 .station-caption{font-size:.59rem;text-transform:uppercase;letter-spacing:.08em;color:var(--secondary-text-color);font-weight:650}
 .times{display:flex;flex-direction:column;align-items:stretch;gap:2px;line-height:1.15;font-variant-numeric:tabular-nums;width:100%}
