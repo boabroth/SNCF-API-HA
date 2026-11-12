@@ -616,7 +616,7 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
 .train-type{overflow-wrap:anywhere}
 .card-header{display:flex;align-items:center;gap:10px;height:56px;min-height:56px;margin:8px 6px;padding:7px 6px 7px 0;border-radius:28px;background:#262626;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background-color .2s ease}
-.title-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--bubble-icon-background-color,var(--bubble-accent-color,var(--secondary-background-color,#171717)));color:#fff}
+.title-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--secondary-background-color,#1b1b1b);color:#fff}
 .title-icon ha-icon{--mdc-icon-size:20px}
 .card-title{flex:1;min-width:0;font-size:.9rem;font-weight:700;line-height:1.2}
 .collapse-chevron{flex:0 0 auto;color:#fff;--mdc-icon-size:24px;transition:transform .28s ease}
