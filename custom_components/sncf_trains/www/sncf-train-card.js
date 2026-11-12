@@ -715,6 +715,8 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .times{display:flex;flex-direction:column;align-items:stretch;gap:2px;line-height:1.15;font-variant-numeric:tabular-nums;width:100%}
 .actual{display:block;width:100%;text-align:inherit;font-size:clamp(1.08rem,5vw,1.48rem);font-weight:800;letter-spacing:-.035em;white-space:nowrap}
 .original{display:block;width:100%;text-align:inherit;font-size:.72rem;color:var(--secondary-text-color);text-decoration:line-through}
+.late .times .actual{order:-1}
+.late .times .original{order:1}
 .middle{min-width:16px;display:flex;align-items:center;justify-content:center;position:relative}
 .track{height:4px;width:100%;position:relative;border-radius:9px;background:var(--divider-color)}
 .track::before,.track::after{content:'';position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--secondary-text-color);opacity:.55}
