@@ -653,7 +653,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
  .journey-destination{margin:0;color:var(--secondary-text-color);font-size:.9rem;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .departure-info-line{display:flex;align-items:center;gap:8px;min-height:20px}
 .journey{position:relative}
-.departure-info-line .journey-destination{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:45%;margin:0;text-align:center}
+.departure-info-line .journey-destination{position:absolute;left:50%;top:52px;bottom:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);margin:0;text-align:center}
  .disruption-info{display:flex;flex-direction:column;gap:3px;margin:9px 2px 0;padding:8px 10px;border:1px solid color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 35%,var(--divider-color));border-radius:9px;background:color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 8%,transparent);color:var(--primary-text-color);font-size:.69rem;line-height:1.35}
  .disruption-heading{display:flex;align-items:center;gap:5px;color:var(--sncf-warning-color,var(--warning-color,#a65b00));font-weight:750}
  .disruption-heading ha-icon{--mdc-icon-size:15px;flex:0 0 auto}
@@ -717,7 +717,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .original{display:block;width:100%;text-align:inherit;font-size:.72rem;color:var(--secondary-text-color);text-decoration:line-through}
 .late .times .actual{order:-1}
 .late .times .original{order:1}
-.middle{min-width:16px;display:flex;align-items:center;justify-content:center;position:relative}
+.middle{min-width:16px;display:flex;align-items:center;justify-content:center;align-self:start;margin-top:31px;position:relative}
 .track{height:4px;width:100%;position:relative;border-radius:9px;background:var(--divider-color)}
 .track::before,.track::after{content:'';position:absolute;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--secondary-text-color);opacity:.55}
 .track::before{left:0}.track::after{right:0}
