@@ -691,7 +691,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .late.moderate .stop-train-marker,.late.moderate .next-stop-label{color:var(--sncf-warning-color,var(--warning-color,#f59e0b))}
 .late.severe .stop-train-marker,.late.severe .next-stop-label{color:var(--error-color,#e53935)}
 .stop-platform-badge{display:inline-flex;align-items:center;justify-content:center;padding:0 5px;min-width:22px;height:17px;box-sizing:border-box;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.74rem;font-weight:750;line-height:17px;white-space:nowrap}
-.stop-train-marker{position:absolute;left:80px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--sncf-raised-background);color:var(--accent);z-index:2;transition:top .5s ease}
+.stop-train-marker{position:absolute;left:80px;transform:translateY(-50%);width:24px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;color:var(--accent);z-index:2;transition:top .5s ease}
 .stop-train-marker ha-icon{--mdc-icon-size:16px;color:inherit}
 .stop-train-marker .emoji{font-size:15px;line-height:1;color:inherit}
 .train-bottom-row{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;min-height:24px;margin:0 -12px;padding:0 12px}
