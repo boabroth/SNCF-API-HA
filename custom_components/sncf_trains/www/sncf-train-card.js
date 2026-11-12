@@ -708,7 +708,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .train-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.stop-details,.expand-chevron ha-icon,.stop-train-marker,.stop-rail-fill{transition:none}}
 .journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:8px;min-width:0;width:100%}
-.station{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:100%}
+.station{display:flex;flex-direction:column;align-self:start;gap:3px;min-width:0;max-width:100%}
 .station.depart{overflow:visible}
 .station.arrive{text-align:right}
 .station-caption{font-size:.59rem;text-transform:uppercase;letter-spacing:.08em;color:var(--secondary-text-color);font-weight:650}
