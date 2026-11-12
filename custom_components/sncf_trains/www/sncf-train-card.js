@@ -707,7 +707,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .late.severe .stop-row.passed .stop-name{color:var(--error-color,#e53935)}
 .train-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.stop-details,.expand-chevron ha-icon,.stop-train-marker,.stop-rail-fill{transition:none}}
-.journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:8px;min-width:0;width:100%}
+.journey{display:grid;grid-template-columns:minmax(0,auto) minmax(16px,1fr) minmax(0,auto);align-items:center;gap:12px;min-width:0;width:100%}
 .station{display:flex;flex-direction:column;align-self:start;gap:3px;min-width:0;max-width:100%}
 .station.depart{overflow:visible}
 .station.arrive{text-align:right}
@@ -748,7 +748,7 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .more ha-icon{--mdc-icon-size:19px}
 .empty{padding:20px;text-align:center;color:var(--secondary-text-color)}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media(max-width:370px){.trains{padding:2px 8px 0}.train-row{padding:11px 9px}.actual{font-size:1.1rem}.journey{gap:6px}}
+@media(max-width:370px){.trains{padding:2px 8px 0}.train-row{padding:11px 9px}.actual{font-size:1.1rem}.journey{gap:9px}}
 @media(prefers-reduced-motion:reduce){.moving-train,.track-fill{transition:none}}
   `;}
 }
