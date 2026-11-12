@@ -605,7 +605,11 @@ class SncfTrainCard extends HTMLElement {
 *{box-sizing:border-box}
 ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-background,var(--card-background-color));color:var(--primary-text-color);border-radius:28px;overflow:hidden;border:0;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .train-details{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:.72rem;color:var(--secondary-text-color);min-width:0}
- .platform-slot{display:flex;align-items:center;min-height:24px;margin-top:7px}\n.platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:0;white-space:nowrap}\n.arrival-slot{justify-content:flex-end}\n.platform-badge{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.76rem;line-height:17px;font-weight:750;white-space:nowrap}\n.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
+ .platform-slot{display:flex;align-items:center;min-height:24px;margin-top:7px}
+.platform-line{display:inline-flex;align-items:center;gap:5px;margin-top:0;white-space:nowrap}
+.arrival-slot{justify-content:flex-end}
+.platform-badge{display:inline-flex;align-items:center;justify-content:center;height:17px;box-sizing:border-box;padding:0 7px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:.76rem;line-height:17px;font-weight:750;white-space:nowrap}
+.arrival-platform{align-self:flex-end;justify-content:flex-end}\n.train-detail{display:inline-flex;align-items:center;gap:4px;min-width:0}
 .train-detail ha-icon{--mdc-icon-size:15px;flex-shrink:0}
 .platform-inline{font-weight:650;color:var(--primary-text-color)}
 .platform-inline strong{font-size:.95rem;font-weight:850;color:var(--primary-color,#03a9f4)}
@@ -647,7 +651,8 @@ nav{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:no
 .platform-changed ha-icon{--mdc-icon-size:13px}
  .journey-destination{margin:0;color:var(--secondary-text-color);font-size:.9rem;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .departure-info-line{display:flex;align-items:center;gap:8px;min-height:20px}
-.departure-info-line .journey-destination{position:relative;top:-2px}
+.journey{position:relative}
+.departure-info-line .journey-destination{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);max-width:45%;margin:0;text-align:center}
  .disruption-info{display:flex;flex-direction:column;gap:3px;margin:9px 2px 0;padding:8px 10px;border:1px solid color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 35%,var(--divider-color));border-radius:9px;background:color-mix(in srgb,var(--sncf-warning-color,var(--warning-color,#f59e0b)) 8%,transparent);color:var(--primary-text-color);font-size:.69rem;line-height:1.35}
  .disruption-heading{display:flex;align-items:center;gap:5px;color:var(--sncf-warning-color,var(--warning-color,#a65b00));font-weight:750}
  .disruption-heading ha-icon{--mdc-icon-size:15px;flex:0 0 auto}
