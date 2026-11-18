@@ -623,7 +623,7 @@ ha-card{width:100%;max-width:100%;min-width:0;background:var(--ha-card-backgroun
 .card-header .refresh-btn{margin-left:auto;background:transparent;color:#fff}
 ha-card .panel{display:block;max-height:10000px;opacity:1;transform:translateY(0);overflow:hidden;transition:max-height .36s ease,opacity .24s ease,transform .36s ease}
 ha-card.collapsed .panel{display:block;max-height:0;opacity:0;transform:translateY(-7px);pointer-events:none}
-ha-card.collapsed .collapse-chevron{transform:rotate(180deg)}
+ha-card.collapsed .collapse-chevron{transform:rotate(-180deg)}
 ha-card.collapsed .card-header{margin:0 6px;height:56px;min-height:56px}
 ha-card:not(.collapsed) .card-header{margin:0 6px}
 .refresh-btn{margin-left:auto;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:var(--secondary-background-color,rgba(100,120,160,.12));color:var(--accent);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
